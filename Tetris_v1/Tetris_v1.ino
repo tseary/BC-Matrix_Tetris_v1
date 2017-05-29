@@ -16,8 +16,8 @@ uint16_t collisionLine;
 // The active tetramino
 byte tetraminoType = TETRAMINO_NONE;
 byte tetraminoR;  // Rotation 0-3
-byte tetraminoX;  // x position (zero is rightmost column, x increases to the left)
-byte tetraminoY;  // y position (zero is bottom row of board, y increases upwards)
+byte tetraminoX;  // x position in the field (zero is rightmost column, x increases to the left)
+byte tetraminoY;  // y position in the field (zero is bottom row of board, y increases upwards)
 
 // @@ = field origin
 // ## = tetramino origin
@@ -83,7 +83,6 @@ void playGame() {
   while (true) {  // TODO while not game over
     // Spawn a new piece
     setTetramino(random(TETRAMINO_COUNT));
-//    nextFallMillis = millis() + fallPeriod;
     lastFallMillis = millis();
     
     drawBoard();
@@ -206,25 +205,30 @@ void gameOver() {
   // Clear the active tetramino
   tetraminoType = TETRAMINO_NONE;
   
+  const uint16_t CURTAIN_MILLIS = 1000 / BOARD_HEIGHT;
+  
   // Fill animation
-  for (byte y = 0; y < BOARD_HEIGHT; y++) {
-    field[y + BORDER_Y] = 0xffff;
-    drawBoard();
-    delay(1000 / BOARD_HEIGHT);
+  for (byte y = 1; y <= BOARD_HEIGHT; y++) {
+    drawBoard(true, y);
+    delay(CURTAIN_MILLIS);
   }
 //  delay(500);
 
   // TODO Allow score etc. animation to be interrupted by user input
   
-  // TODO Display score
-  // TODO Un-fill animation which reveals score from bottom up
+  // Display score
   clearBoard();
   uint16_t scoreCopy = score;
   for (byte i = 0; i < 4 && scoreCopy != 0; i++) {
-    setDisplayDigit(scoreCopy % 10, 1, BORDER_Y + 6 * i);
+    setDisplayDigit(scoreCopy % 10, 1, BORDER_Y + 1 + 6 * i);
     scoreCopy /= 10;
   }
-  drawBoardReveal();
+  
+  // Raise curtain animation
+  for (byte y = 1; y <= BOARD_HEIGHT; y++) {
+    drawBoard(false, y - BOARD_HEIGHT);
+    delay(CURTAIN_MILLIS);
+  }
   delay(1000);
   
   

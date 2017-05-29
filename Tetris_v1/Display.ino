@@ -5,7 +5,7 @@ using namespace lr;
 AS1130 ledDriver;
 
 typedef AS1130Picture24x5 Picture;
-Picture boardRender;
+Picture picture;
 
 void initializeDisplay() {
   // Start I2C
@@ -42,9 +42,12 @@ void initializeDisplay() {
 // drawTetramino determines whether or not to draw the active tetramino
 // curtain fills all the pixels up to the given number (if positive),
 //   or down to the given number (if negative). Zero means no curtain will be drawn.
-void drawBoard(bool drawTetramino = true, int curtain = 0) {
+void drawBoard(){
+  drawBoard(true, 0);
+}
+void drawBoard(bool drawTetramino, int curtain) {
   // Render and output the current state of the board
-  for (int boardY = 0; y < BOARD_HEIGHT; y++) {
+  for (int boardY = 0; boardY < BOARD_HEIGHT; boardY++) {
     // A row of the image to draw
     uint16_t row;
 
@@ -60,7 +63,7 @@ void drawBoard(bool drawTetramino = true, int curtain = 0) {
     // Draw active piece
     if (drawTetramino) {
       uint16_t tetraminoShape = TETRAMINO_SHAPES[tetraminoType][tetraminoR];
-      int tetraminoRowIndex = y - tetraminoY;
+      int tetraminoRowIndex = boardY + BORDER_Y - tetraminoY;
       if (tetraminoRowIndex >= 0 && tetraminoRowIndex < TETRAMINO_SIZE) {
         row |= ((tetraminoShape >> (TETRAMINO_SIZE * tetraminoRowIndex)) &
             TETRAMINO_MASK) << tetraminoX;
@@ -76,39 +79,6 @@ void drawBoard(bool drawTetramino = true, int curtain = 0) {
   
   // DEBUG
 //  printBoard();
-}
-
-void drawBoardReveal() {
-  for (byte i = BORDER_Y; i <= FIELD_HEIGHT; i++) {
-    // Render and output the current state of the board
-    for (int y = FIELD_HEIGHT - 1; y >= BORDER_Y; y--) {
-      // The row to draw
-      uint16_t row;
-      if (y < i) {
-        // Get a row from the field
-        row = field[y];
-        
-        // Draw active piece
-        if (tetraminoType != TETRAMINO_NONE) {
-          int tetraminoRowIndex = y - tetraminoY;
-          if (tetraminoRowIndex >= 0 && tetraminoRowIndex < TETRAMINO_SIZE) {
-            uint16_t tetraminoShape = TETRAMINO_SHAPES[tetraminoType][tetraminoR];
-            row |= ((tetraminoShape >> (TETRAMINO_SIZE * tetraminoRowIndex)) &
-                TETRAMINO_MASK) << tetraminoX;
-          }
-        }
-      } else {
-        row = 0xffff;
-      }
-  
-      // Draw row
-      for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1), x = 0; (rowMask & ~BORDER_MASK) != 0; rowMask >>= 1, x++) {
-        picture.setPixel(FIELD_HEIGHT - 1 - y, BOARD_WIDTH - 1 - x, row & rowMask);
-      }
-    }
-    ledDriver.setOnOffFrame(0, picture);
-    delay(1000 / BOARD_HEIGHT);  // TODO pass in
-  }
 }
 
 // TODO possibly rename this to include other display data e.g. next piece, level number etc.
