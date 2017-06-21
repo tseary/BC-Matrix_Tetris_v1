@@ -13,7 +13,9 @@
 
 // This file manages debouncing and detects button clicks.
 
-const byte NAV_SWITCH_PIN = A3;
+#include <Encoder.h>
+
+const byte NAV_SWITCH_PIN = A1;
 
 bool isDPressed = false;
 bool isUPressed = false;
@@ -32,7 +34,7 @@ void initializeControl() {
 }
 
 // Reads the buttons etc.
-void updateControl() {
+void updateButtons() {
   int analogValue = analogRead(NAV_SWITCH_PIN);
   
   // Store previous button states
@@ -92,5 +94,21 @@ bool isCClick() {
 
 bool isDPress() {
   return isDPressed;
+}
+
+Encoder encoder(2, 3);
+
+long lastPosition = 0;
+long nextPosition = 0;
+
+void updateEncoder() {
+  lastPosition = nextPosition;
+  nextPosition = (encoder.read() + 2) / 4;
+}
+
+// Gets the change in encoder position (4 counts = 1 detent)
+// Positive = clockwise
+long getPositionChange() {
+  return nextPosition - lastPosition;
 }
 

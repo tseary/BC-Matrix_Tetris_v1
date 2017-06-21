@@ -101,7 +101,8 @@ void playGame() {
       // User input loop
       do {
         // Read buttons
-        updateControl();
+        updateButtons();
+        updateEncoder();
         bool draw = false;  // Only draw if something changed
         
         // Move left
@@ -117,9 +118,11 @@ void playGame() {
         }
         
         // Rotate CCW
-        if (isUClick()) {
+        //if (isUClick()) {
+        long positionChange = getPositionChange();
+        if (positionChange != 0) {
           for (byte i = 0; i < 4; i++) {  // This should work as an infinite loop, but we use a for loop for safety
-            if (!tryRotateTetraminoCCW()) {
+            if (!(positionChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {
               // Couldn't rotate, check where the collision is and try to move away from the walls
               if (collisionLine & ~(0xffff << BORDER_X)) {  // Collision on right
                 if (!tryMoveTetraminoLeft()) {
@@ -287,6 +290,15 @@ uint16_t getFallPeriod(uint16_t level) {
 /******************************************************************************
  * Teramino Movement
  ******************************************************************************/
+
+// TODO Make CW and CCW general
+bool tryRotateTetraminoCW() {
+  bool canRotateCW = canTetraminoRotateCW();
+  if (canRotateCW) {
+    tetraminoR = (tetraminoR + 3) % 4;
+  }
+  return canRotateCW;
+}
 
 bool tryRotateTetraminoCCW() {
   bool canRotateCCW = canTetraminoRotateCCW();
