@@ -15,6 +15,12 @@
 // The speaker pin connects, in series, to a 100 uF capacitor, 150 Ohm resistor,
 // 5 kOhm rheostat (volume control), and 8 Ohm speaker to ground.
 
+// Master communication pins
+const byte
+  MOSI_PIN = 0, // Data input
+  MISO_PIN = 1, // Data output
+  SCK_PIN = 2;  // Clock input
+
 const byte SPEAKER_PIN = 4;
 
 // Note frequencies in Hertz (rounded to nearest integer)
