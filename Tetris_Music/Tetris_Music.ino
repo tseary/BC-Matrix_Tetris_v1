@@ -24,9 +24,9 @@ enum Pitch : byte {
 // Symbols for note values (and indexes for NOTE_DURATIONS[])
 enum Value : byte {
   v16TH, v8TH, v8TH_DOT, v4TH, v4TH_DOT, v2ND, v1ST
-  //SEMIQUAVER, QUAVER, QUAVER_DOT, CROTCHET, CROTCHET_DOT, MINIM, BREVE
 };
 
+// Audio output pin
 const byte SPEAKER_PIN = 4;
 
 // The current game level, which determines the song tempo (level 0 = silence)
@@ -79,13 +79,14 @@ void badTone(byte pin, uint16_t frequency, uint16_t duration) {
   }
 
   // Play note
-  uint32_t halfPeriod = max(1, 500000 / frequency);
+  uint32_t period = max(2, 1000000 / frequency);  // Clamp to prevent 0 delay
+  uint32_t halfPeriod = period / 2;
   uint32_t endTime = millis() + duration;
   do {
     digitalWrite(pin, HIGH);
     delayMicroseconds(halfPeriod);
     digitalWrite(pin, LOW);
-    delayMicroseconds(halfPeriod);
+    delayMicroseconds(period - halfPeriod);
   } while (millis() < endTime);
 }
 

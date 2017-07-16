@@ -15,44 +15,58 @@
 
 #include <Encoder.h>
 
-const byte NAV_SWITCH_PIN = A1;
+// Buttons
+const byte L_BUTTON_PIN = 8; // brown
+const byte R_BUTTON_PIN = 7; // gray
+const byte D_BUTTON_PIN = 6; // green
+const byte E_BUTTON_PIN = 4; // blue
 
-bool isDPressed = false;
-bool isUPressed = false;
-bool isRPressed = false;
 bool isLPressed = false;
-bool isCPressed = false;
+bool isRPressed = false;
+bool isDPressed = false;
+bool isEPressed = false;
 
-bool wasDPressed = false;
-bool wasUPressed = false;
-bool wasRPressed = false;
 bool wasLPressed = false;
-bool wasCPressed = false;
+bool wasRPressed = false;
+bool wasDPressed = false;
+bool wasEPressed = false;
+
+// Encoder
+// The encoder pins are set to INPUT_PULLUP inside the Encoder class
+const byte ENCODER_A_PIN = 3; // yellow
+const byte ENCODER_B_PIN = 2; // red
+
+Encoder encoder(ENCODER_A_PIN, ENCODER_B_PIN);
+
+long lastPosition = 0;
+long nextPosition = 0;
 
 void initializeControl() {
-  pinMode(NAV_SWITCH_PIN, INPUT);
+  // Active-low pushbuttons
+  pinMode(L_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(R_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(D_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(E_BUTTON_PIN, INPUT_PULLUP);
 }
 
 // Reads the buttons etc.
-void updateButtons() {
-  int analogValue = analogRead(NAV_SWITCH_PIN);
-  
+void updateControl() {
   // Store previous button states
-  wasDPressed = isDPressed;
-  wasUPressed = isUPressed;
-  wasRPressed = isRPressed;
   wasLPressed = isLPressed;
-  wasCPressed = isCPressed;
+  wasRPressed = isRPressed;
+  wasDPressed = isDPressed;
+  wasEPressed = isEPressed;
   
-  // Clear buttons
-  isDPressed = false;
-  isUPressed = false;
-  isRPressed = false;
-  isLPressed = false;
-  isCPressed = false;
+  // Read buttons
+  isLPressed = !digitalRead(L_BUTTON_PIN);
+  isRPressed = !digitalRead(R_BUTTON_PIN);
+  isDPressed = !digitalRead(D_BUTTON_PIN);
+  isEPressed = !digitalRead(E_BUTTON_PIN);
+  
+  updateEncoder();
   
   // Check analog input
-  if (analogValue > 931) {
+  /*if (analogValue > 931) {
     // No button
   } else if (analogValue > 794) {
     // Down
@@ -69,46 +83,37 @@ void updateButtons() {
   } else {
     // Center
     isCPressed = true;
-  }
-}
-
-bool isDClick() {
-  return !wasDPressed && isDPressed;
-}
-
-bool isUClick() {
-  return !wasUPressed && isUPressed;
-}
-
-bool isRClick() {
-  return !wasRPressed && isRPressed;
+  }*/
 }
 
 bool isLClick() {
   return !wasLPressed && isLPressed;
 }
 
-bool isCClick() {
-  return !wasCPressed && isCPressed;
+bool isRClick() {
+  return !wasRPressed && isRPressed;
+}
+
+bool isDClick() {
+  return !wasDPressed && isDPressed;
+}
+
+bool isEClick() {
+  return !wasEPressed && isEPressed;
 }
 
 bool isDPress() {
   return isDPressed;
 }
 
-Encoder encoder(2, 3);
-
-long lastPosition = 0;
-long nextPosition = 0;
-
 void updateEncoder() {
   lastPosition = nextPosition;
-  nextPosition = (encoder.read() + 2) / 4;
+  nextPosition = (encoder.read() + 2) / 4;  // Encoder detents are spaces four counts apart
 }
 
 // Gets the change in encoder position (4 counts = 1 detent)
 // Positive = clockwise
-long getPositionChange() {
+long getEncoderChange() {
   return nextPosition - lastPosition;
 }
 

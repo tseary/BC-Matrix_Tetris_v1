@@ -101,8 +101,7 @@ void playGame() {
       // User input loop
       do {
         // Read buttons
-        updateButtons();
-        updateEncoder();
+        updateControl();
         bool draw = false;  // Only draw if something changed
         
         // Move left
@@ -118,8 +117,7 @@ void playGame() {
         }
         
         // Rotate CCW
-        //if (isUClick()) {
-        long positionChange = getPositionChange();
+        long positionChange = getEncoderChange();
         if (positionChange != 0) {
           for (byte i = 0; i < 4; i++) {  // This should work as an infinite loop, but we use a for loop for safety
             if (!(positionChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {

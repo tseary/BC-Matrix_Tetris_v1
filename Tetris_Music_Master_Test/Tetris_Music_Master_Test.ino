@@ -7,7 +7,7 @@ const byte
 // Commands - top four bits = counter, bottom four bits = opcode
 const byte
   COMMAND_SILENCE = 0x00,
-  COMMAND_NEXT_LEVEL = 0x11;
+  COMMAND_NEXT_LEVEL = 0x01;
 
 const uint16_t OPCODE_SETTLING_MICROS = 100;
 const uint16_t OPCODE_PROCESSING_MICROS = 300;
