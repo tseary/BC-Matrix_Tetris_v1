@@ -48,6 +48,13 @@ uint16_t fallPeriod = 1000;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 
+// Music commands - top four bits = counter, bottom four bits = opcode
+const byte
+  COMMAND_SILENCE = 0x00,
+  COMMAND_LEVEL_ONE = 0x01,
+  COMMAND_LEVEL_UP = 0x02,
+  COMMAND_GAME_OVER = 0x0d;
+
 void setup() {
   // DEBUG
   Serial.begin(115200);
@@ -57,6 +64,7 @@ void setup() {
   
   initializeControl();
   initializeDisplay();
+  initializeMusic();
 }
 
 void loop() {
@@ -77,6 +85,8 @@ void newGame() {
   
   clearBoard();
   drawBoard();
+  
+  sendMusicCommand(COMMAND_LEVEL_ONE);
 }
 
 void playGame() {
@@ -196,8 +206,12 @@ void playGame() {
       drawScore();
       
       // Level up
+      uint16_t previousLevel = level;
       level = getLevel(linesCleared);
       fallPeriod = getFallPeriod(level);
+      if (level > previousLevel) {
+        sendMusicCommand(COMMAND_LEVEL_UP);
+      }
     }
   }
 }
@@ -206,9 +220,10 @@ void gameOver() {
   // Clear the active tetramino
   tetraminoType = TETRAMINO_NONE;
   
-  const uint16_t CURTAIN_MILLIS = 1000 / BOARD_HEIGHT;
+  sendMusicCommand(COMMAND_GAME_OVER);
   
   // Fill animation
+  const uint16_t CURTAIN_MILLIS = 1000 / BOARD_HEIGHT;
   for (byte y = 1; y <= BOARD_HEIGHT; y++) {
     drawBoard(true, y);
     delay(CURTAIN_MILLIS);
@@ -220,8 +235,9 @@ void gameOver() {
   // Display score
   clearBoard();
   uint16_t scoreCopy = score;
-  for (byte i = 0; i < 4 && scoreCopy != 0; i++) {
-    setDisplayDigit(scoreCopy % 10, 1, BORDER_Y + 1 + 6 * i);
+  for (byte i = 0; i == 0 || (i < 4 && scoreCopy != 0); i++) {
+//    setDisplayDigit3Wide(scoreCopy % 10, 1, BORDER_Y + 1 + 6 * i);
+    setDisplayDigit5Wide(scoreCopy % 10, 0, BORDER_Y + 1 + 6 * i);
     scoreCopy /= 10;
   }
   
@@ -400,6 +416,7 @@ void assimilateTetramino() {
  * Text
  ******************************************************************************/
 
+// 3-wide
 const uint32_t BOARD_DIGITS[5] = {
   0b00110010100010110001110111111010,
   0b00001101100101001001001100010101,
@@ -408,13 +425,31 @@ const uint32_t BOARD_DIGITS[5] = {
   0b00010010111011111101110110010010
 };
 
+// 5-wide digits 0 to 5
+const uint32_t BOARD_DIGITS_05[5] = {
+  0b00011110000111110111111111101110,
+  0b00100000000100001100000010010001,
+  0b00011111111100110011100010010001,
+  0b00000011000100001000011110010001,
+  0b00111111000111111111100010001110
+};
+
+// 5-wide digits 6 to 9
+const uint32_t BOARD_DIGITS_69[5] = {
+  0b00000000000011110011100010001110,
+  0b00000000000000001100010010010001,
+  0b00000000000001111011100001011110,
+  0b00000000000010001100010000110000,
+  0b00000000000001110011101111101111
+};
+
 void setDisplayText(String str) {
   for (byte i = 0; i < str.length(); i++) {
     byte stringY = BOARD_HEIGHT - 6 * (i + 1) + BORDER_Y;
     char stringChar = str[i];
 
     if (isDigit(stringChar)) {
-      setDisplayDigit(stringChar - '0', 1, stringY);
+      setDisplayDigit3Wide(stringChar - '0', 1, stringY);
     } else {
       for (byte r = 0; r < 5; r++) {
         field[stringY + r] = BORDER_MASK | (0x01 << r) << BORDER_X;
@@ -424,9 +459,15 @@ void setDisplayText(String str) {
   drawBoard();
 }
 
-void setDisplayDigit(byte digit, byte x, byte y) {
+void setDisplayDigit3Wide(byte digit, byte x, byte y) {
   for (byte r = 0; r < 5; r++) {
     field[y + r] = ((BOARD_DIGITS[r] >> (3 * digit)) & 0b111) << (BORDER_X + x);
+  }
+}
+
+void setDisplayDigit5Wide(byte digit, byte x, byte y) {
+  for (byte r = 0; r < 5; r++) {
+    field[y + r] = (((digit <= 5 ? BOARD_DIGITS_05[r] : BOARD_DIGITS_69[r]) >> (5 * (digit % 6))) & 0b11111) << (BORDER_X + x);
   }
 }
 

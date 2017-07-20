@@ -12,10 +12,13 @@ volatile bool commandReady = false;
 volatile byte commandOpcode = 0x00;
 volatile byte commandCounter = 0;
 
-// Commands - top four bits = counter, bottom four bits = opcode
+// Music commands - top four bits = counter, bottom four bits = opcode
+// TODO Make timing and pitch settable
 const byte
   COMMAND_SILENCE = 0x00,
-  COMMAND_NEXT_LEVEL = 0x01;
+  COMMAND_LEVEL_ONE = 0x01,
+  COMMAND_LEVEL_UP = 0x02,
+  COMMAND_GAME_OVER = 0x0d;
 
 void initializeCommand() {
   // Set up master communication
@@ -47,9 +50,19 @@ void checkCommand() {
     case COMMAND_SILENCE:
       gameLevel = 0;
       break;
-    case COMMAND_NEXT_LEVEL:
+      
+    case COMMAND_LEVEL_ONE:
+      gameLevel = 1;
+      calculateTempo();
+      break;
+      
+    case COMMAND_LEVEL_UP:
       gameLevel++;
       calculateTempo();
+      break;
+      
+    case COMMAND_GAME_OVER: // TODO Play death jingle
+      gameLevel = 0;
       break;
   }
   

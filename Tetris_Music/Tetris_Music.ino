@@ -30,7 +30,7 @@ enum Value : byte {
 const byte SPEAKER_PIN = 4;
 
 // The current game level, which determines the song tempo (level 0 = silence)
-byte gameLevel = 1;
+byte gameLevel = 0;
 
 // TODO Move pitches, values and song to separate file
 
