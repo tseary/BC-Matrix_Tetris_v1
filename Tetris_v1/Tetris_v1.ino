@@ -20,6 +20,18 @@ byte tetraminoR;  // Rotation 0-3
 byte tetraminoX;  // x position in the field (zero is rightmost column, x increases to the left)
 byte tetraminoY;  // y position in the field (zero is bottom row of board, y increases upwards)
 
+// The game field is represented by an array of uint16_t, with one bit
+// representing each block. The game board is the part of the field that
+// fits on the screen. There is a minimum 3-bit-wide border around the
+// game board on the sides and bottom. All of the field bits outside the
+// board are ones, making them behave like solid walls and floor. This
+// facilitates the game engine math.
+
+// Similarly, each tetramino is represented by an array of four uint16_t.
+// The 16 bits are interpreted as blocks in a 4 x 4 grid, and there is a
+// separate uint16_t for each rotation of the same tetramino.
+// See Tetramino.h for more details.
+
 // @@ = field origin
 // ## = tetramino origin
 // '. = empty tetramino bit
@@ -96,6 +108,7 @@ void loop() {
  * Game State
  ******************************************************************************/
 
+// Starts a new game.
 void newGame() {
   score = 0;
   linesCleared = 0;
@@ -108,15 +121,17 @@ void newGame() {
   sendMusicCommand(COMMAND_LEVEL_ONE);
 }
 
+// Plays a full game. This function does not return until game over, when a
+// newly spawned tetramino collides with existing blocks.
 void playGame() {
-  while (true) {  // TODO while not game over
+  while (true) {
     // Spawn a new piece
     setTetramino(random(TETRAMINO_COUNT));
     lastFallMillis = millis();
     
     drawBoard();
   
-    // TODO check for collision (game over)
+    // Check for collision (game over)
     if (isTetraminoCollision()) {
       return; // Game over
     }
@@ -235,6 +250,7 @@ void playGame() {
   }
 }
 
+// Draws the game over animation, displays the player's score, etc.
 void gameOver() {
   // Clear the active tetramino
   tetraminoType = TETRAMINO_NONE;
@@ -297,7 +313,7 @@ void gameOver() {
   delay(1000);
 }
 
-// Clear the board (fills border)
+// Clear the board (also fills the border).
 void clearBoard() {
   for (byte y = 0; y < FIELD_HEIGHT; y++) {
     field[y] = y < BORDER_Y ? 0xffff : BORDER_MASK;
@@ -308,14 +324,18 @@ void clearBoard() {
  * Game Stats
  ******************************************************************************/
 
+// Gets the number of points earned for clearing the given number of lines.
 uint16_t getLineScore(byte lines) {
   return lines * (lines + 1) / 2;
 }
 
+// Gets the current level. The level is implied by the number of lines cleared.
 uint16_t getLevel(uint16_t linesCleared) {
   return linesCleared / 10 + 1;
 }
 
+// Gets the number of milliseconds between steps of a falling piece.
+// The period is initially 1000 and decreases exponentially as the level increases. 
 uint16_t getFallPeriod(uint16_t level) {
   return round(1000 * pow(0.774264, level - 1));  // 10x speed in level 10
 }
@@ -324,7 +344,9 @@ uint16_t getFallPeriod(uint16_t level) {
  * Teramino Movement
  ******************************************************************************/
 
-// TODO Make CW and CCW general
+// TODO Combine tryRotateTetraminoCW() with tryRotateTetraminoCCW().
+// Rotates the active tetramino clockwise by 90 degrees if possible.
+// Returns true if the tetramino was rotated successfully.
 bool tryRotateTetraminoCW() {
   bool canRotateCW = canTetraminoRotateCW();
   if (canRotateCW) {
@@ -333,6 +355,8 @@ bool tryRotateTetraminoCW() {
   return canRotateCW;
 }
 
+// Rotates the active tetramino counterclockwise by 90 degrees if possible.
+// Returns true if the tetramino was rotated successfully.
 bool tryRotateTetraminoCCW() {
   bool canRotateCCW = canTetraminoRotateCCW();
   if (canRotateCCW) {
@@ -341,6 +365,8 @@ bool tryRotateTetraminoCCW() {
   return canRotateCCW;
 }
 
+// Moves the active tetramino one step to the left if possible.
+// Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoLeft() {
   bool canMoveLeft = canTetraminoMoveLeft();
   if (canMoveLeft) {
@@ -349,6 +375,8 @@ bool tryMoveTetraminoLeft() {
   return canMoveLeft;
 }
 
+// Moves the active tetramino one step to the right if possible.
+// Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoRight() {
   bool canMoveRight = canTetraminoMoveRight();
   if (canMoveRight) {
@@ -357,10 +385,13 @@ bool tryMoveTetraminoRight() {
   return canMoveRight;
 }
 
+// Drops the active tetramino instantaneously.
 void dropTetramino() {
   while (tryMoveTetraminoDown());
 }
 
+// Moves the active tetramino one step down if possible.
+// Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoDown() {
   bool canMoveDown = canTetraminoMoveDown();
   if (canMoveDown) {
@@ -373,7 +404,7 @@ bool tryMoveTetraminoDown() {
  * Active Teramino
  ******************************************************************************/
 
-// Creates a tetramino at the top of the screen
+// Spawns a tetramino at the top of the screen
 void setTetramino(byte type) {
   tetraminoType = type;
   tetraminoR = 0;
@@ -422,7 +453,7 @@ bool isTetraminoCollision(byte type, byte r, byte x, byte y) {
   return false;
 }
 
-// Adds the active tetramino to the field
+// Adds the active tetramino to the field.
 void assimilateTetramino() {
   const uint16_t tetraminoShape = TETRAMINO_SHAPES[tetraminoType][tetraminoR];
   for (byte i = 0; i < TETRAMINO_SIZE; i++) {
@@ -435,7 +466,7 @@ void assimilateTetramino() {
  * Text
  ******************************************************************************/
 
-// 3-wide
+// 3-wide digits 0 to 9
 const uint32_t BOARD_DIGITS[5] = {
   0b00110010100010110001110111111010,
   0b00001101100101001001001100010101,
@@ -470,6 +501,7 @@ void setDisplayText(String str) {
     if (isDigit(stringChar)) {
       setDisplayDigit3Wide(stringChar - '0', 1, stringY);
     } else {
+      // TODO Implement letters
       for (byte r = 0; r < 5; r++) {
         field[stringY + r] = BORDER_MASK | (0x01 << r) << BORDER_X;
       }
