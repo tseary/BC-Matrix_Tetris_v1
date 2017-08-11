@@ -1,4 +1,5 @@
 
+#include <EEPROM.h>
 #include "Tetramino.h"
 
 // Game board
@@ -47,6 +48,8 @@ uint16_t level = 1;
 uint16_t fallPeriod = 1000;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
+uint16_t highScore = 0;
+char* highScoreInitials = "CTS "; // Four letters
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 const byte
@@ -55,13 +58,29 @@ const byte
   COMMAND_LEVEL_UP = 0x02,
   COMMAND_GAME_OVER = 0x0d;
 
+// EEPROM addresses
+const byte
+  EEPROM_RANDOM_SEED = 0, // uint32_t
+  EEPROM_HIGH_SCORE = 4,  // uint16_t
+  EEPROM_HIGH_SCORE_INITIALS = 6;  // 4 chars
+  
 void setup() {
   // DEBUG
   Serial.begin(115200);
   
-  // Initialize the RNG
-  randomSeed(analogRead(A0));
+  // Initialize the RNG, and change the seed value for next time
+  uint32_t eepromRandomSeed;
+  EEPROM.get(EEPROM_RANDOM_SEED, eepromRandomSeed);
+  randomSeed(eepromRandomSeed);
+  eepromRandomSeed = random();
+  EEPROM.put(EEPROM_RANDOM_SEED, eepromRandomSeed);
   
+  // Load the high score
+  // TODO When we load the high score initials, if any are non-letters and non-space, reset high score
+  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+  // TODO Load highScoreInitials[]
+  
+  // Initialize functions
   initializeControl();
   initializeDisplay();
   initializeMusic();
