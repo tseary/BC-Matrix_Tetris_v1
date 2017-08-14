@@ -61,7 +61,7 @@ uint16_t fallPeriod = 1000;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 uint16_t highScore = 0;
-char* highScoreInitials = "CTS "; // Four letters
+char* highScoreInitials = "CTS";  // Three letters
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 const byte
@@ -90,6 +90,7 @@ void setup() {
   // Load the high score
   // TODO When we load the high score initials, if any are non-letters and non-space, reset high score
   EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+//  highScore = 0;
   // TODO Load highScoreInitials[]
   
   // Initialize functions
@@ -266,8 +267,16 @@ void gameOver() {
 //  delay(500);
 
   // TODO Allow score etc. animation to be interrupted by user input
+
+  // Compare the score to the high score
+  // TODO Forbid skipping score display if true
+  // TODO Flash score if it is a high score
+  bool newHighScore = score > highScore;  // True if the high score was just beaten
+  highScore = score;
+  EEPROM.put(EEPROM_HIGH_SCORE, highScore);
   
   // Display score
+  // TODO Center vertically?
   clearBoard();
   uint16_t scoreCopy = score;
   for (byte i = 0; i == 0 || (i < 4 && scoreCopy != 0); i++) {
@@ -281,34 +290,29 @@ void gameOver() {
     drawBoard(false, y - BOARD_HEIGHT);
     delay(CURTAIN_MILLIS);
   }
-  delay(1000);
-  
-  
-  /*byte y = BOARD_HEIGHT + BORDER_Y;
-  field[y - 1] = 0x0000;
-  uint16_t scoreDivider = 1;
-  byte scoreDigits = 0;
-  while (score / scoreDivider >= 10) {
-    scoreDivider *= 10;
-  }
-  uint16_t scoreCopy = score;
-  uint16_t scoreChange;
-  while (scoreDivider != 0) {
-    scoreChange = scoreCopy / scoreDivider;
-    
-    y -= 6;
-    field[y - 1] = 0x0000;
-    setDisplayDigit(scoreChange, 1, y);
-    drawBoard();
-    Serial.println(scoreChange);
-    
-    scoreCopy -= scoreChange * scoreDivider;
-    scoreDivider /= 10;
 
-    delay(500);
-  }*/
+  // Make the score flash if it is a new high score
+  if (newHighScore) {
+    for (byte i = 0; i < 5; i++) {
+      drawBlank(); // Hide
+      delay(100);
+      drawBoard(false); // Show
+      delay(100);
+    }
+  } else {
+    delay(1000);
+  }
   
-  // TODO Display high score etc
+  if (newHighScore) {
+    // TODO Display "HIGH"
+    // TODO Display "SCORE"
+    // TODO Enter initials
+    // TODO Show score again
+  } else {
+    // TODO Show initials
+    // TODO Show high score
+  }
+  
   Serial.println("Game Over!");
   delay(1000);
 }
@@ -477,10 +481,10 @@ const uint32_t BOARD_DIGITS[5] = {
 
 // 5-wide digits 0 to 5
 const uint32_t BOARD_DIGITS_05[5] = {
-  0b00011110000111110111111111101110,
-  0b00100000000100001100000010010001,
-  0b00011111111100110011100010010001,
-  0b00000011000100001000011110010001,
+  0b00111100000111110111111111101110,
+  0b00000010000100001100000010010001,
+  0b00111101111100110011100010010001,
+  0b00100001000100001000011110010001,
   0b00111111000111111111100010001110
 };
 

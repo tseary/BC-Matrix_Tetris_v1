@@ -5,7 +5,8 @@ using namespace lr;
 AS1130 ledDriver;
 
 typedef AS1130Picture24x5 Picture;
-Picture picture;
+Picture boardPicture; // The picture of the board, score, etc.
+Picture blankPicture; // A picture with nothing drawn on it
 
 void initializeDisplay() {
   // Start I2C
@@ -43,7 +44,10 @@ void initializeDisplay() {
 // curtain fills all the pixels up to the given number (if positive),
 //   or down to the given number (if negative). Zero means no curtain will be drawn.
 void drawBoard(){
-  drawBoard(true, 0);
+  drawBoard(true);
+}
+void drawBoard(bool drawTetramino){
+  drawBoard(drawTetramino, 0);
 }
 void drawBoard(bool drawTetramino, int curtain) {
   // Render and output the current state of the board
@@ -72,10 +76,10 @@ void drawBoard(bool drawTetramino, int curtain) {
 
     // Draw row
     for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1), x = 0; (rowMask & ~BORDER_MASK) != 0; rowMask >>= 1, x++) {
-      picture.setPixel(BOARD_HEIGHT - 1 - boardY, BOARD_WIDTH - 1 - x, row & rowMask);
+      boardPicture.setPixel(BOARD_HEIGHT - 1 - boardY, BOARD_WIDTH - 1 - x, row & rowMask);
     }
   }
-  ledDriver.setOnOffFrame(0, picture);
+  ledDriver.setOnOffFrame(0, boardPicture);
   
   // DEBUG
 //  printBoard();
@@ -88,7 +92,9 @@ void drawScore() {
   Serial.println(score);
 }
 
-
+void drawBlank() {
+  ledDriver.setOnOffFrame(0, blankPicture);
+}
 
 /******************************************************************************
  * DEBUG
