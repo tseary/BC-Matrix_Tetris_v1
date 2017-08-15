@@ -89,8 +89,8 @@ void setup() {
   
   // Load the high score
   // TODO When we load the high score initials, if any are non-letters and non-space, reset high score
-  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
-//  highScore = 0;
+//  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+  highScore = 0;
   // TODO Load highScoreInitials[]
   
   // Initialize functions
@@ -186,14 +186,7 @@ void playGame() {
           }
           draw = true;
         }
-
-        // Drop
-        /*if (isDClick()) {
-          dropTetramino();
-          draw = true;
-          // TODO break drop loop so that piece cannot move after drop
-        }*/
-  
+        
         if (draw) {
           drawBoard();
         }
@@ -304,8 +297,17 @@ void gameOver() {
   }
   
   if (newHighScore) {
-    // TODO Display "HIGH"
-    // TODO Display "SCORE"
+    // Display "HIGH"
+    clearBoard();
+    drawText5High("HIGH");
+    drawBoard(false);
+    delay(1000);  // DEBUG
+    
+    // Display "SCORE"
+    drawTextScore();
+    drawBoard(false);
+    delay(1000);  // DEBUG
+    
     // TODO Enter initials
     // TODO Show score again
   } else {
