@@ -32,6 +32,9 @@ const byte SPEAKER_PIN = 4;
 // The current game level, which determines the song tempo (level 0 = silence)
 byte gameLevel = 0;
 
+// If false, all sounds are muted
+bool soundOn = true;
+
 // TODO Move pitches, values and song to separate file
 
 void setup() {
@@ -46,13 +49,13 @@ void setup() {
 
 void loop() {
   // Wait in silence
-  while (gameLevel == 0) {
+  while (gameLevel == 0 || !soundOn) {
     checkCommand();
   }
   
   // Play song
   uint16_t decayDuration;
-  for (uint16_t i = 0; i < getSongLength() && gameLevel > 0; i++) {
+  for (uint16_t i = 0; i < getSongLength() && gameLevel > 0 && soundOn; i++) {
     // Slur 16th notes
     decayDuration = getNoteValue(i) > Value::v16TH ?
         getDecayDuration() : getDecayDuration() / 2;

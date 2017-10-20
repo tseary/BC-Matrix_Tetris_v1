@@ -61,20 +61,25 @@ uint16_t fallPeriod = 1000;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 uint16_t highScore = 0;
-char* highScoreInitials = "CTS";  // Three letters
+char highScoreInitials[] = {'A', 'A', 'A', '\0'};  // Three letters and NULL
+const byte INITIALS_COUNT = 3;
+const uint16_t DISPLAY_MILLIS = 1000; // The amount of time to show scores, names, etc.
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 const byte
   COMMAND_SILENCE = 0x00,
   COMMAND_LEVEL_ONE = 0x01,
   COMMAND_LEVEL_UP = 0x02,
-  COMMAND_GAME_OVER = 0x0d;
+  COMMAND_HIGH_SCORE = 0x0a,
+  COMMAND_GAME_OVER = 0x0d,
+  COMMAND_SOUND_ON = 0x0e,
+  COMMAND_SOUND_OFF = 0x0f;
 
 // EEPROM addresses
 const byte
   EEPROM_RANDOM_SEED = 0, // uint32_t
   EEPROM_HIGH_SCORE = 4,  // uint16_t
-  EEPROM_HIGH_SCORE_INITIALS = 6;  // 4 chars
+  EEPROM_HIGH_SCORE_INITIALS = 6;  // 3 chars
   
 void setup() {
   // DEBUG
@@ -87,11 +92,20 @@ void setup() {
   eepromRandomSeed = random();
   EEPROM.put(EEPROM_RANDOM_SEED, eepromRandomSeed);
   
-  // Load the high score
-  // TODO When we load the high score initials, if any are non-letters and non-space, reset high score
-//  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
-  highScore = 0;
-  // TODO Load highScoreInitials[]
+  // Load the high score data
+  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+  Serial.print("highScore = ");
+  Serial.println(highScore);
+  bool highScoreInitialsValid = true;
+  for (byte i = 0; i < INITIALS_COUNT; i++) {
+    highScoreInitials[i] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i);
+    highScoreInitialsValid &= highScoreInitials[i] >= 'A' && highScoreInitials[i] <= 'Z';
+  }
+  
+  // Sanity check
+  if (!highScoreInitialsValid) {
+    resetHighScoreData();
+  }
   
   // Initialize functions
   initializeControl();
@@ -118,7 +132,7 @@ void newGame() {
   
   clearBoard();
   drawBoard();
-  
+
   sendMusicCommand(COMMAND_LEVEL_ONE);
 }
 
@@ -231,7 +245,7 @@ void playGame() {
       
       // Calculate score
       score += getLineScore(lineCount);
-      drawScore();
+      printScore();
       
       // Level up
       uint16_t previousLevel = level;
@@ -257,35 +271,29 @@ void gameOver() {
     drawBoard(true, y);
     delay(CURTAIN_MILLIS);
   }
-//  delay(500);
 
   // TODO Allow score etc. animation to be interrupted by user input
 
   // Compare the score to the high score
   // TODO Forbid skipping score display if true
-  // TODO Flash score if it is a high score
   bool newHighScore = score > highScore;  // True if the high score was just beaten
-  highScore = score;
-  EEPROM.put(EEPROM_HIGH_SCORE, highScore);
+  if (newHighScore) {
+    highScore = score;
+  }
   
   // Display score
-  // TODO Center vertically?
   clearBoard();
-  uint16_t scoreCopy = score;
-  for (byte i = 0; i == 0 || (i < 4 && scoreCopy != 0); i++) {
-//    setDisplayDigit3Wide(scoreCopy % 10, 1, BORDER_Y + 1 + 6 * i);
-    setDisplayDigit5Wide(scoreCopy % 10, 0, BORDER_Y + 1 + 6 * i);
-    scoreCopy /= 10;
-  }
+  drawUInt16(score);
   
   // Raise curtain animation
   for (byte y = 1; y <= BOARD_HEIGHT; y++) {
     drawBoard(false, y - BOARD_HEIGHT);
     delay(CURTAIN_MILLIS);
   }
-
+  
   // Make the score flash if it is a new high score
   if (newHighScore) {
+    sendMusicCommand(COMMAND_HIGH_SCORE);
     for (byte i = 0; i < 5; i++) {
       drawBlank(); // Hide
       delay(100);
@@ -293,7 +301,10 @@ void gameOver() {
       delay(100);
     }
   } else {
-    delay(1000);
+    // Display the score non-flashing
+    if (breakableDelay(DISPLAY_MILLIS)) {
+      return;
+    }
   }
   
   if (newHighScore) {
@@ -301,22 +312,130 @@ void gameOver() {
     clearBoard();
     drawText5High("HIGH");
     drawBoard(false);
-    delay(1000);  // DEBUG
+    delay(DISPLAY_MILLIS);
     
     // Display "SCORE"
     drawTextScore();
     drawBoard(false);
-    delay(1000);  // DEBUG
+    delay(DISPLAY_MILLIS);
     
-    // TODO Enter initials
-    // TODO Show score again
+    // Enter initials
+    for (byte i = 0; i < INITIALS_COUNT; i++) {
+      highScoreInitials[i] = 'A';  // Clear the old initials
+    }
+    char hiddenLetter;
+    byte letterIndex = 0;
+    uint32_t flashStartMillis = millis();
+    bool flashOn, wasFlashOn = false;
+    bool redraw;  // The display is only updated if this is true
+    do {
+      updateControl();
+      redraw = false;
+
+      // Change letter
+      long encoderChange = getEncoderChange();
+      if (encoderChange != 0) {
+        // Change letter and wrap around
+        highScoreInitials[letterIndex] += encoderChange;
+        if (highScoreInitials[letterIndex] < 'A') {
+          highScoreInitials[letterIndex] += 26;
+        } else if (highScoreInitials[letterIndex] > 'Z') {
+          highScoreInitials[letterIndex] -= 26;
+        }
+
+        // Reset flashing
+        flashStartMillis = millis();
+        redraw = true;
+      }
+      
+      // Select letter or finish
+      if (isLClick() && letterIndex > 0) {
+        // L is previous
+        letterIndex--;
+        redraw = true;
+      } else if (isRClick() && letterIndex < INITIALS_COUNT - 1) {
+        // R is next only
+        letterIndex++;
+        redraw = true;
+      } else if (isDClick()) {
+        // D is next/finish
+        letterIndex++;
+        redraw = true;
+      }
+
+      // Make selected letter flash
+      flashOn = (millis() - flashStartMillis + 333) % 1000 < 667;
+      redraw |= flashOn ^ wasFlashOn;
+      wasFlashOn = flashOn;
+
+      if (redraw) {
+        // Hide the selected letter while it is flashed off
+        if (!flashOn && letterIndex < INITIALS_COUNT) {
+          hiddenLetter = highScoreInitials[letterIndex];
+          highScoreInitials[letterIndex] = ' ';
+        }
+        
+        // Draw initials
+        clearBoard();
+        drawText5High(highScoreInitials);
+        drawBoard(false);
+
+        // Unhide the selected letter
+        if (!flashOn && letterIndex < INITIALS_COUNT) {
+          highScoreInitials[letterIndex] = hiddenLetter;
+        }
+      }
+    } while (letterIndex < INITIALS_COUNT);
+    
+    // Save the high score data immediately
+    saveHighScoreData();
+    Serial.print("High score initials: ");
+    Serial.println(highScoreInitials);
+    Serial.print("High score: ");
+    Serial.println(highScore);
+    
+    // Show completed initials
+    delay(DISPLAY_MILLIS);
+    
+    // Show score again
+    clearBoard();
+    drawUInt16(score);
+    drawBoard(false);
+    delay(3 * DISPLAY_MILLIS);
+    
   } else {
-    // TODO Show initials
-    // TODO Show high score
+    // Show high score initials
+    clearBoard();
+    drawText5High(highScoreInitials);
+    drawBoard(false);
+    if (breakableDelay(DISPLAY_MILLIS)) {
+      return;
+    }
+
+    // Show high score
+    clearBoard();
+    drawUInt16(highScore);
+    drawBoard(false);
+    if (breakableDelay(DISPLAY_MILLIS)) {
+      return;
+    }
   }
   
   Serial.println("Game Over!");
-  delay(1000);
+}
+
+// Helper
+// Returns true if the user clicked a button to break the delay
+bool breakableDelay(uint32_t milliseconds) {
+  uint32_t delayStartMillis = millis();
+  while (millis() - delayStartMillis < milliseconds) {
+    updateControl();
+    if (isLClick() || isRClick() || isDClick()) {
+      return true;
+    }
+    delay(1);
+  }
+  return false;
 }
 
 // Clear the board (also fills the border).
@@ -344,6 +463,22 @@ uint16_t getLevel(uint16_t linesCleared) {
 // The period is initially 1000 and decreases exponentially as the level increases. 
 uint16_t getFallPeriod(uint16_t level) {
   return round(1000 * pow(0.774264, level - 1));  // 10x speed in level 10
+}
+
+// Clears the high score and initials from EEPROM
+void resetHighScoreData() {
+  highScore = 0;
+  for (byte i = 0; i < INITIALS_COUNT; i++) {
+    highScoreInitials[i] = 'A';
+  }
+  saveHighScoreData();
+}
+
+void saveHighScoreData() {
+  EEPROM.put(EEPROM_HIGH_SCORE, highScore);
+  for (byte i = 0; i < INITIALS_COUNT; i++) {
+      EEPROM.write(EEPROM_HIGH_SCORE_INITIALS + i, highScoreInitials[i]);
+  }
 }
 
 /******************************************************************************

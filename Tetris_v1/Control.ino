@@ -16,10 +16,10 @@
 #include <Encoder.h>
 
 // Buttons
-const byte L_BUTTON_PIN = 8; // brown
-const byte R_BUTTON_PIN = 7; // gray
-const byte D_BUTTON_PIN = 6; // green
-const byte E_BUTTON_PIN = 4; // blue
+const byte L_BUTTON_PIN = 8; // brown wire
+const byte R_BUTTON_PIN = 7; // gray wire
+const byte D_BUTTON_PIN = 6; // green wire
+const byte E_BUTTON_PIN = 4; // blue wire (encoder button)
 
 bool isLPressed = false;
 bool isRPressed = false;

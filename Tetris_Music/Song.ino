@@ -15,7 +15,7 @@ const uint16_t SONG_LENGTH =
   8 + 6 + 5 + 4 +
   7 + 5 + 5 + 4 +
   2 + 2 + 2 + 3 +
-  2 + 2 + 2 + 3;
+  2 + 2 + 3 + 2;
 
 // The pitches of notes in the song
 Pitch songPitches[SONG_LENGTH] = {
@@ -30,11 +30,11 @@ Pitch songPitches[SONG_LENGTH] = {
   E4, C4,
   D4, B4,
   C4, A4n,
-  G3b, B4, REST,
+  A4b, B4, REST,
   E4, C4,
   D4, B4,
-  C4, A4n,
-  G3b, B4, REST};
+  C4, E4, A5n,
+  A5b, REST};
   
 // The values of notes in the song
 Value songValues[SONG_LENGTH] = {
@@ -52,8 +52,8 @@ Value songValues[SONG_LENGTH] = {
   v2ND, v4TH, v4TH,
   v2ND, v2ND,
   v2ND, v2ND,
-  v2ND, v2ND,
-  v2ND, v4TH, v4TH};
+  v4TH, v4TH, v2ND,
+  v2ND, v2ND};
 
 uint16_t getSongLength() {
   return SONG_LENGTH;

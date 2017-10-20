@@ -18,7 +18,10 @@ const byte
   COMMAND_SILENCE = 0x00,
   COMMAND_LEVEL_ONE = 0x01,
   COMMAND_LEVEL_UP = 0x02,
-  COMMAND_GAME_OVER = 0x0d;
+  COMMAND_HIGH_SCORE = 0x0a,
+  COMMAND_GAME_OVER = 0x0d,
+  COMMAND_SOUND_ON = 0x0e,
+  COMMAND_SOUND_OFF = 0x0f;
 
 void initializeCommand() {
   // Set up master communication
@@ -61,8 +64,19 @@ void checkCommand() {
       calculateTempo();
       break;
       
+    case COMMAND_HIGH_SCORE:   // TODO Play fanfare
+      break;
+      
     case COMMAND_GAME_OVER: // TODO Play death jingle
       gameLevel = 0;
+      break;
+      
+    case COMMAND_SOUND_ON:
+      soundOn = true;
+      break;
+      
+    case COMMAND_SOUND_OFF:
+      soundOn = false;
       break;
   }
   
