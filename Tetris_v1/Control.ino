@@ -103,7 +103,7 @@ void updateEncoder() {
   nextPosition = (encoder.read() + 2) / 4;  // Encoder detents are spaces four counts apart
 }
 
-// Gets the change in encoder position (4 counts = 1 detent)
+// Gets the change in encoder position
 // Positive = clockwise
 long getEncoderChange() {
   return nextPosition - lastPosition;

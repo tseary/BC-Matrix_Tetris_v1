@@ -34,6 +34,9 @@ const byte SPEAKER_N_PIN = 3; // Inverted output
 // The current game level, which determines the song tempo (level 0 = silence)
 byte gameLevel = 0;
 
+// Flag to indicate that the game is over
+bool gameOverFlag = false;
+
 // If false, all sounds are muted
 bool soundOn = true;
 
@@ -58,7 +61,7 @@ void loop() {
   
   // Play song
   uint16_t decayDuration;
-  for (uint16_t i = 0; i < getSongLength() && gameLevel > 0 && soundOn; i++) {
+  for (uint16_t i = 0; i < getSongLength() && gameLevel > 0 && soundOn && !gameOverFlag; i++) {
     // Slur 16th notes
     decayDuration = getNoteValue(i) > Value::v16TH ?
         getDecayDuration() : getDecayDuration() / 2;
@@ -73,8 +76,15 @@ void loop() {
     
     checkCommand();
   }
+  
+  // Game over! Play the death jingle
+  if (gameOverFlag) {
+    // TODO reuse song loop above, put different tracks in an array
+    gameOverFlag = false;
+  }
 }
 
+// Bit-bangs a tone on two pins with opposite phase
 void badToneDifferential(byte pPin, byte nPin, uint16_t frequency, uint16_t duration) {
   // Rest
   if (frequency == 0) {
@@ -95,27 +105,6 @@ void badToneDifferential(byte pPin, byte nPin, uint16_t frequency, uint16_t dura
     digitalWrite(nPin, HIGH);
     delayMicroseconds(period - halfPeriod);
     digitalWrite(nPin, LOW);
-  } while (millis() < endTime);
-}
-
-void badTone(byte pin, uint16_t frequency, uint16_t duration) {
-  // Rest
-  if (frequency == 0) {
-    if (duration != 0) {
-      delay(duration);
-    }
-    return;
-  }
-
-  // Play note
-  uint32_t period = max(2, 1000000 / frequency);  // Clamp to prevent 0 delay
-  uint32_t halfPeriod = period / 2;
-  uint32_t endTime = millis() + duration;
-  do {
-    digitalWrite(pin, HIGH);
-    delayMicroseconds(halfPeriod);
-    digitalWrite(pin, LOW);
-    delayMicroseconds(period - halfPeriod);
   } while (millis() < endTime);
 }
 

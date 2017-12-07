@@ -10,6 +10,8 @@ uint16_t NOTE_DURATIONS[6];
 // The silence at the end of each note
 uint16_t DURA_DECAY = 0;
 
+/* THEME SONG ********************************************************/
+
 // The number of notes and rests in the song
 const uint16_t SONG_LENGTH =
   8 + 6 + 5 + 4 +
@@ -54,6 +56,19 @@ Value songValues[SONG_LENGTH] = {
   v2ND, v2ND,
   v4TH, v4TH, v2ND,
   v2ND, v2ND};
+
+/* GAME OVER ********************************************************/
+
+// The number of notes and rests in the song
+const uint16_t GAME_OVER_LENGTH = 3;
+
+// The pitches of notes in the song
+Pitch gameOverPitches[GAME_OVER_LENGTH] = {
+  D4, C4, A4n};
+  
+// The values of notes in the song
+Value gameOverValues[GAME_OVER_LENGTH] = {
+  v4TH, v4TH, v2ND};
 
 uint16_t getSongLength() {
   return SONG_LENGTH;

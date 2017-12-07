@@ -17,11 +17,9 @@ void initializeMusic() {
 // A command may be comprised of one or more opcodes
 void sendMusicCommand(byte command) {
   byte counter = command >> 4;
-
   for (byte i = 0; i < counter; i++) {
     sendOpcode(0x0f);
   }
-
   sendOpcode(command);  // Top four bits are ignored
 }
 

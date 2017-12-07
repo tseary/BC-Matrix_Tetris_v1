@@ -2,6 +2,8 @@
 #include <EEPROM.h>
 #include "Tetramino.h"
 
+#define DEBUG_SERIAL true
+
 // Game board
 const byte BOARD_WIDTH = 5;   // The width of the play area
 const byte BOARD_HEIGHT = 24; // The height of the play area
@@ -63,49 +65,76 @@ uint32_t lastFallMillis = 0;
 uint16_t highScore = 0;
 char highScoreInitials[] = {'A', 'A', 'A', '\0'};  // Three letters and NULL
 const byte INITIALS_COUNT = 3;
-const uint16_t DISPLAY_MILLIS = 1000; // The amount of time to show scores, names, etc.
+const uint16_t DISPLAY_MILLIS = 3000; // The amount of time to show scores, names, etc.
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 const byte
   COMMAND_SILENCE = 0x00,
   COMMAND_LEVEL_ONE = 0x01,
   COMMAND_LEVEL_UP = 0x02,
-  COMMAND_HIGH_SCORE = 0x0a,
-  COMMAND_GAME_OVER = 0x0d,
-  COMMAND_SOUND_ON = 0x0e,
-  COMMAND_SOUND_OFF = 0x0f;
+  COMMAND_HIGH_SCORE = 0x03,
+  COMMAND_SOUND_ON = 0x0b,
+  COMMAND_SOUND_OFF = 0x0c,
+  COMMAND_GAME_OVER = 0x0d;
 
 // EEPROM addresses
 const byte
   EEPROM_RANDOM_SEED = 0, // uint32_t
   EEPROM_HIGH_SCORE = 4,  // uint16_t
-  EEPROM_HIGH_SCORE_INITIALS = 6;  // 3 chars
-  
+  EEPROM_HIGH_SCORE_INITIALS = 6,  // 3 chars
+  EEPROM_LED_CURRENT = 10;
+
+
+// TODO
+// - add low-power functionality
+// - compose game-over sound
+
+
 void setup() {
-  // DEBUG
+#if DEBUG_SERIAL
   Serial.begin(115200);
+  Serial.println(F("Compiled: " __DATE__ " " __TIME__));
+#endif
   
   // Initialize the RNG, and change the seed value for next time
   uint32_t eepromRandomSeed;
   EEPROM.get(EEPROM_RANDOM_SEED, eepromRandomSeed);
   randomSeed(eepromRandomSeed);
-  eepromRandomSeed = random();
+  eepromRandomSeed = random() ^ analogRead(A0);
   EEPROM.put(EEPROM_RANDOM_SEED, eepromRandomSeed);
   
   // Initialize functions
   initializeControl();
   initializeDisplay();
   initializeMusic();
-
-  // Check the reset-high-score button combination L+R+E
+  
+  // Power-on settings
   updateControl();
-  bool resetHighScore = isLPress() && isRPress() && !isDPress() && isEPress();
+  bool soundOn = !isDPress();
+  bool adjustBrightnessNow = isRPress();
+  bool resetHighScore = isLPress() && isDPress() && !isRPress();
+  if (resetHighScore) {
+    delay(1000);
+    resetHighScore &= isLPress() && isDPress() && !isRPress();
+    delay(1000);
+    resetHighScore &= isLPress() && isDPress() && !isRPress();
+  }
+
+  // Enable/disable the sound
+  sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
+  
+  // Adjust the brightness with the encoder
+  if (adjustBrightnessNow) {
+    adjustBrightness();
+  }
   
   // Load the high score data and perform sanity check
   if (!resetHighScore) {
     EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+#if DEBUG_SERIAL
     Serial.print("highScore = ");
     Serial.println(highScore);
+#endif
     for (byte i = 0; i < INITIALS_COUNT; i++) {
       highScoreInitials[i] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i);
       resetHighScore |= !(highScoreInitials[i] >= 'A' && highScoreInitials[i] <= 'Z');
@@ -116,6 +145,24 @@ void setup() {
   if (resetHighScore) {
     resetHighScoreData();
   }
+}
+
+void adjustBrightness() {
+    // Get the display current
+    int currentInput = getLEDCurrent();
+
+    // Draw something to show the brightness
+    drawText5High("XXXX");
+    drawBoard();
+    
+    // Change the current with the encoder
+    do {
+      updateControl();
+      currentInput += 0x10 * getEncoderChange();
+      currentInput = constrain(currentInput, 0x0f, 0xff);
+      setLEDCurrent((uint8_t)currentInput);
+      delay(10);
+    } while(!isRClick());
 }
 
 void loop() {
@@ -247,10 +294,17 @@ void playGame() {
     if (lineCount != 0) {
       // Increase total count
       linesCleared += lineCount;
+#if DEBUG_SERIAL
+      Serial.print("Lines: ");
+      Serial.println(linesCleared);
+#endif
       
       // Calculate score
       score += getLineScore(lineCount);
-      printScore();
+#if DEBUG_SERIAL
+      Serial.print("Score: ");
+      Serial.println(score);
+#endif
       
       // Level up
       uint16_t previousLevel = level;
@@ -258,6 +312,10 @@ void playGame() {
       fallPeriod = getFallPeriod(level);
       if (level > previousLevel) {
         sendMusicCommand(COMMAND_LEVEL_UP);
+#if DEBUG_SERIAL
+        Serial.print("Level: ");
+        Serial.println(level);
+#endif
       }
     }
   }
@@ -299,7 +357,7 @@ void gameOver() {
   // Make the score flash if it is a new high score
   if (newHighScore) {
     sendMusicCommand(COMMAND_HIGH_SCORE);
-    for (byte i = 0; i < 5; i++) {
+    for (byte i = 0; i < DISPLAY_MILLIS / 200; i++) {
       drawBlank(); // Hide
       delay(100);
       drawBoard(false); // Show
@@ -317,12 +375,12 @@ void gameOver() {
     clearBoard();
     drawText5High("HIGH");
     drawBoard(false);
-    delay(DISPLAY_MILLIS);
+    delay(1000);
     
     // Display "SCORE"
     drawTextScore();
     drawBoard(false);
-    delay(DISPLAY_MILLIS);
+    delay(1000);
     
     // Enter initials
     for (byte i = 0; i < INITIALS_COUNT; i++) {
@@ -394,26 +452,28 @@ void gameOver() {
     
     // Save the high score data immediately
     saveHighScoreData();
+#if DEBUG_SERIAL
     Serial.print("High score initials: ");
     Serial.println(highScoreInitials);
     Serial.print("High score: ");
     Serial.println(highScore);
+#endif
     
     // Show completed initials
-    delay(DISPLAY_MILLIS);
+    delay(1000);
     
     // Show score again
     clearBoard();
     drawUInt16(score);
     drawBoard(false);
-    delay(3 * DISPLAY_MILLIS);
+    delay(DISPLAY_MILLIS);
     
   } else {
     // Show high score initials
     clearBoard();
     drawText5High(highScoreInitials);
     drawBoard(false);
-    if (breakableDelay(DISPLAY_MILLIS)) {
+    if (breakableDelay(1000)) {
       return;
     }
 
@@ -421,7 +481,7 @@ void gameOver() {
     clearBoard();
     drawUInt16(highScore);
     drawBoard(false);
-    if (breakableDelay(DISPLAY_MILLIS)) {
+    if (breakableDelay(1000)) {
       return;
     }
   }

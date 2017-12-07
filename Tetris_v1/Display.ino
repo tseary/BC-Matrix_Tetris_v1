@@ -1,10 +1,9 @@
 
-// TODO Store brightness in EEPROM, allow changes at startup
-
 #include <LRAS1130.h>
 
 using namespace lr;
 AS1130 ledDriver;
+uint8_t ledCurrent;
 
 typedef AS1130Picture24x5 Picture;
 Picture boardPicture; // The picture of the board, score, etc.
@@ -24,11 +23,19 @@ void initializeDisplay() {
     return;
   }*/
 
+  // Load the brightness from EEPROM
+  EEPROM.get(EEPROM_LED_CURRENT, ledCurrent);
+  
+  // Sanity check
+  if (ledCurrent == 0) {
+    ledCurrent = AS1130::Current15mA;
+  }
+
   // Set-up everything
   ledDriver.setRamConfiguration(AS1130::RamConfiguration1);
   ledDriver.setOnOffFrameAllOff(0);
   ledDriver.setBlinkAndPwmSetAll(0);
-  ledDriver.setCurrentSource(/*(AS1130::Current)0x10*/ AS1130::Current25mA); // 0 - 30 (in 5 mA increments)
+  ledDriver.setCurrentSource(ledCurrent); // 0x00 = 0 mA, 0xff = 30 mA
   ledDriver.setScanLimit(AS1130::ScanLimitFull);
   ledDriver.setMovieEndFrame(AS1130::MovieEndWithFirstFrame);
   ledDriver.setMovieFrameCount(4);
@@ -39,6 +46,16 @@ void initializeDisplay() {
   
   // Enable the chip
   ledDriver.startChip();
+}
+
+uint8_t getLEDCurrent() {
+  return ledCurrent;
+}
+
+void setLEDCurrent(uint8_t newCurrent) {
+  ledCurrent = newCurrent;
+  ledDriver.setCurrentSource(ledCurrent);
+  EEPROM.put(EEPROM_LED_CURRENT, ledCurrent);
 }
 
 // Updates the board display
@@ -85,13 +102,6 @@ void drawBoard(bool drawTetramino, int curtain) {
   
   // DEBUG
 //  printBoard();
-}
-
-// TODO possibly rename this to include other display data e.g. next piece, level number etc.
-void printScore() {
-  // TODO Render and output the current player score
-  Serial.print("Score: ");
-  Serial.println(score);
 }
 
 void drawUInt16(uint16_t score) {
