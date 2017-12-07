@@ -19,14 +19,23 @@ const uint8_t TRACK_COUNT = 3;
 // track 0 = theme song
 // track 1 = game over
 // track 2 = high score
+
+const uint16_t
+  TRACK_0_LENGTH =
+    (8 + 6 + 5 + 4 +
+    7 + 5 + 5 + 4 +
+    2 + 2 + 2 + 3 +
+    2 + 2 + 3 + 2),
+  TRACK_1_LENGTH = 5,
+  TRACK_2_LENGTH = 7;
+
 const uint16_t TRACK_LENGTHS[TRACK_COUNT] = {
-  (8 + 6 + 5 + 4 +
-  7 + 5 + 5 + 4 +
-  2 + 2 + 2 + 3 +
-  2 + 2 + 3 + 2), 5, 7;
+  TRACK_0_LENGTH,
+  TRACK_1_LENGTH,
+  TRACK_2_LENGTH};
 
 // The pitches of notes in the theme song track
-Pitch themeSongPitches[SONG_LENGTH] = {
+Pitch themeSongPitches[TRACK_0_LENGTH] = {
   E4, B4, C4, D4, E4, D4, C4, B4,
   A4n, A4n, C4, E4, D4, C4,
   B4, B4, C4, D4, E4,
@@ -45,18 +54,18 @@ Pitch themeSongPitches[SONG_LENGTH] = {
   A5b, REST};
 
 // The pitches of notes in the game over track
-Pitch gameOverPitches[SONG_LENGTH] = {
+Pitch gameOverPitches[TRACK_1_LENGTH] = {
   E4, D4, C4, B4, A4n};
 
 // The pitches of notes in the high score track
-Pitch highScorePitches[SONG_LENGTH] = {
+Pitch highScorePitches[TRACK_2_LENGTH] = {
   C4, C4, C4, D4, C4, D4, E4};
 
 // Array of pointers to track pitch arrays
-Pitch *trackPitches[TRACK_COUNT] = {&songPitches, &gameOverPitches, &highScorePitches};
+Pitch *trackPitches[TRACK_COUNT] = {themeSongPitches, gameOverPitches, highScorePitches};
 
 // The values of notes in the theme song track
-Value songValues[SONG_LENGTH] = {
+Value themeSongValues[TRACK_0_LENGTH] = {
   v4TH, v8TH, v8TH, v8TH, v16TH, v16TH, v8TH, v8TH,
   v4TH, v8TH, v8TH, v4TH, v8TH, v8TH,
   v4TH, v8TH, v8TH, v4TH, v4TH,
@@ -75,28 +84,15 @@ Value songValues[SONG_LENGTH] = {
   v2ND, v2ND};
 
 // The values of notes in the game over track
-Value gameOverValues[SONG_LENGTH] = {
+Value gameOverValues[TRACK_1_LENGTH] = {
   v8TH, v8TH, v8TH, v8TH, v2ND};
 
 // The values of notes in the high score track
-Value highScoreValues[SONG_LENGTH] = {
+Value highScoreValues[TRACK_2_LENGTH] = {
   v2ND, v8TH, v4TH_DOT, v4TH, v4TH, v4TH, v2ND};
 
 // Array of pointers to track value arrays
-Value *trackValues[TRACK_COUNT] = {&songValues, &gameOverValues, &highScoreValues};
-
-/* GAME OVER ********************************************************/
-
-// The number of notes and rests in the song
-const uint16_t GAME_OVER_LENGTH = 3;
-
-// The pitches of notes in the song
-Pitch gameOverPitches[GAME_OVER_LENGTH] = {
-  D4, C4, A4n};
-  
-// The values of notes in the song
-Value gameOverValues[GAME_OVER_LENGTH] = {
-  v4TH, v4TH, v2ND};
+Value *trackValues[TRACK_COUNT] = {themeSongValues, gameOverValues, highScoreValues};
 
 uint16_t getTrackLength(uint8_t track) {
   return TRACK_LENGTHS[track];

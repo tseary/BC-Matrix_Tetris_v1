@@ -79,7 +79,9 @@ void loop() {
         getDecayDuration() : getDecayDuration() / 2;
 
     // Play note
-    badToneDifferential(SPEAKER_P_PIN, SPEAKER_N_PIN, getNoteFrequency(i), getNoteDuration(i) - decayDuration);
+    badToneDifferential(SPEAKER_P_PIN, SPEAKER_N_PIN,
+        getNoteFrequency(trackNumber, i),
+        getNoteDuration(trackNumber, i) - decayDuration);
     
     // Silence between notes
     if (decayDuration > 0) {
