@@ -14,7 +14,6 @@ volatile byte commandCounter = 0;
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 // No command is allowed to have 0xf as the lower nibble.
-// TODO Make timing and pitch settable
 const byte
   COMMAND_SILENCE = 0x00,
   COMMAND_LEVEL_ONE = 0x01,
@@ -52,26 +51,25 @@ void checkCommand() {
   // Do command
   switch (commandOpcode) {
     case COMMAND_SILENCE:
-      gameLevel = 0;
+      setGameLevel(0);
       break;
       
     case COMMAND_LEVEL_ONE:
-      gameLevel = 1;
-      calculateTempo();
+      setGameLevel(1);
       break;
       
     case COMMAND_LEVEL_UP:
-      gameLevel++;
-      calculateTempo();
+      setGameLevel(gameLevel + 1);
       break;
       
-    case COMMAND_HIGH_SCORE:   // TODO Play fanfare
+    case COMMAND_HIGH_SCORE:
+      setGameLevel(0);
+      setTrackNumber(2);
       break;
       
-    case COMMAND_GAME_OVER: // TODO Play death jingle
-      gameLevel = 0;
-      calculateTempo();
-      gameOverFlag = true;
+    case COMMAND_GAME_OVER:
+      setGameLevel(0);
+      setTrackNumber(1);
       break;
       
     case COMMAND_SOUND_ON:

@@ -31,16 +31,19 @@ enum Value : byte {
 const byte SPEAKER_P_PIN = 4; // Non-inverted output
 const byte SPEAKER_N_PIN = 3; // Inverted output
 
-// The current game level, which determines the song tempo (level 0 = silence)
-byte gameLevel = 0;
+// The track currently being played
+// Track 0 is special:
+// - it will not play while the game level is zero
+// - the track number is set to 0 after any other track is finished
+uint8_t trackNumber = 0;
+// Flag to indicate that the track was changed
+bool trackChangeFlag = false;
 
-// Flag to indicate that the game is over
-bool gameOverFlag = false;
+// The current game level, which determines the song tempo (level 0 = silence)
+uint8_t gameLevel = 0;
 
 // If false, all sounds are muted
 bool soundOn = true;
-
-// TODO Move pitches, values and song to separate file
 
 void setup() {
   // Set the audio output pins
@@ -58,12 +61,21 @@ void loop() {
   while (gameLevel == 0 || !soundOn) {
     checkCommand();
   }
+
+  // Clear the track change flag before entering the play loop
+  trackChangeFlag = false;
   
-  // Play song
+  // Play track
+  // This loop breaks when:
+  // - the last note in the track is played, OR
+  // - the game level is zero and the track number is zero, OR
+  // - the sound is off, OR
+  // - the track was changed
   uint16_t decayDuration;
-  for (uint16_t i = 0; i < getSongLength() && gameLevel > 0 && soundOn && !gameOverFlag; i++) {
+  for (uint16_t i = 0; i < getTrackLength(trackNumber) &&
+      (gameLevel > 0 || trackNumber > 0) && soundOn && !trackChangeFlag; i++) {
     // Slur 16th notes
-    decayDuration = getNoteValue(i) > Value::v16TH ?
+    decayDuration = getNoteValue(trackNumber, i) != Value::v16TH ?
         getDecayDuration() : getDecayDuration() / 2;
 
     // Play note
@@ -76,12 +88,19 @@ void loop() {
     
     checkCommand();
   }
-  
-  // Game over! Play the death jingle
-  if (gameOverFlag) {
-    // TODO reuse song loop above, put different tracks in an array
-    gameOverFlag = false;
-  }
+
+  // Return to default track after play is completed
+  setTrackNumber(0);
+}
+
+void setTrackNumber(uint8_t track) {
+  trackChangeFlag = true;
+  trackNumber = track;
+}
+
+void setGameLevel(uint8_t level) {
+  gameLevel = level;
+  calculateTempo();
 }
 
 // Bit-bangs a tone on two pins with opposite phase
