@@ -64,26 +64,6 @@ void updateControl() {
   isEPressed = !digitalRead(E_BUTTON_PIN);
   
   updateEncoder();
-  
-  // Check analog input
-  /*if (analogValue > 931) {
-    // No button
-  } else if (analogValue > 794) {
-    // Down
-    isDPressed = true;
-  } else if (analogValue > 683) {
-    // Up
-    isUPressed = true;
-  } else if (analogValue > 514) {
-    // Right
-    isRPressed = true;
-  } else if (analogValue > 206) {
-    // Left
-    isLPressed = true;
-  } else {
-    // Center
-    isCPressed = true;
-  }*/
 }
 
 bool isLClick() {
@@ -102,8 +82,20 @@ bool isEClick() {
   return !wasEPressed && isEPressed;
 }
 
+bool isLPress() {
+  return isLPressed;
+}
+
+bool isRPress() {
+  return isRPressed;
+}
+
 bool isDPress() {
   return isDPressed;
+}
+
+bool isEPress() {
+  return isEPressed;
 }
 
 void updateEncoder() {

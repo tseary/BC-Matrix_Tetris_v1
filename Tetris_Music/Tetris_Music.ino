@@ -12,7 +12,7 @@
 // This is the same connection used by the Arduino-as-ISP programmer,
 // therefore no additional hardware is necessary to program the ATTINY.
 
-// The speaker pin connects, in series, to a 100 uF capacitor, 150 Ohm resistor,
+// The speaker pin connects, in series, to a 100 uF capacitor, 120 Ohm resistor,
 // 5 kOhm rheostat (volume control), and 8 Ohm speaker to ground.
 
 // Symbols for note pitches (and indexes for NOTE_FREQUENCIES[])
@@ -26,8 +26,10 @@ enum Value : byte {
   v16TH, v8TH, v8TH_DOT, v4TH, v4TH_DOT, v2ND, v1ST
 };
 
-// Audio output pin
-const byte SPEAKER_PIN = 4;
+// Differential audio output pins
+// Both pins are low when idle
+const byte SPEAKER_P_PIN = 4; // Non-inverted output
+const byte SPEAKER_N_PIN = 3; // Inverted output
 
 // The current game level, which determines the song tempo (level 0 = silence)
 byte gameLevel = 0;
@@ -38,8 +40,9 @@ bool soundOn = true;
 // TODO Move pitches, values and song to separate file
 
 void setup() {
-  // Set the audio output pin
-  pinMode(SPEAKER_PIN, OUTPUT);
+  // Set the audio output pins
+  pinMode(SPEAKER_P_PIN, OUTPUT);
+  pinMode(SPEAKER_N_PIN, OUTPUT);
   
   // Calculate the length of each note value based on the 16th note
   calculateTempo();
@@ -61,7 +64,7 @@ void loop() {
         getDecayDuration() : getDecayDuration() / 2;
 
     // Play note
-    badTone(SPEAKER_PIN, getNoteFrequency(i), getNoteDuration(i) - decayDuration);
+    badToneDifferential(SPEAKER_P_PIN, SPEAKER_N_PIN, getNoteFrequency(i), getNoteDuration(i) - decayDuration);
     
     // Silence between notes
     if (decayDuration > 0) {
@@ -70,6 +73,29 @@ void loop() {
     
     checkCommand();
   }
+}
+
+void badToneDifferential(byte pPin, byte nPin, uint16_t frequency, uint16_t duration) {
+  // Rest
+  if (frequency == 0) {
+    if (duration != 0) {
+      delay(duration);
+    }
+    return;
+  }
+
+  // Play note
+  uint32_t period = max(2, 1000000 / frequency);  // Clamp to prevent 0 delay
+  uint32_t halfPeriod = period / 2;
+  uint32_t endTime = millis() + duration;
+  do {
+    digitalWrite(pPin, HIGH);
+    delayMicroseconds(halfPeriod);
+    digitalWrite(pPin, LOW);
+    digitalWrite(nPin, HIGH);
+    delayMicroseconds(period - halfPeriod);
+    digitalWrite(nPin, LOW);
+  } while (millis() < endTime);
 }
 
 void badTone(byte pin, uint16_t frequency, uint16_t duration) {

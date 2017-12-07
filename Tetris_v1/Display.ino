@@ -1,4 +1,6 @@
 
+// TODO Store brightness in EEPROM, allow changes at startup
+
 #include <LRAS1130.h>
 
 using namespace lr;
@@ -26,7 +28,7 @@ void initializeDisplay() {
   ledDriver.setRamConfiguration(AS1130::RamConfiguration1);
   ledDriver.setOnOffFrameAllOff(0);
   ledDriver.setBlinkAndPwmSetAll(0);
-  ledDriver.setCurrentSource((AS1130::Current)0x10 /*AS1130::Current5mA*/); // 0 - 30 (in 5 mA increments)
+  ledDriver.setCurrentSource(/*(AS1130::Current)0x10*/ AS1130::Current25mA); // 0 - 30 (in 5 mA increments)
   ledDriver.setScanLimit(AS1130::ScanLimitFull);
   ledDriver.setMovieEndFrame(AS1130::MovieEndWithFirstFrame);
   ledDriver.setMovieFrameCount(4);

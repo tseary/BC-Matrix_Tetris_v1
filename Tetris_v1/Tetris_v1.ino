@@ -92,25 +92,30 @@ void setup() {
   eepromRandomSeed = random();
   EEPROM.put(EEPROM_RANDOM_SEED, eepromRandomSeed);
   
-  // Load the high score data
-  EEPROM.get(EEPROM_HIGH_SCORE, highScore);
-  Serial.print("highScore = ");
-  Serial.println(highScore);
-  bool highScoreInitialsValid = true;
-  for (byte i = 0; i < INITIALS_COUNT; i++) {
-    highScoreInitials[i] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i);
-    highScoreInitialsValid &= highScoreInitials[i] >= 'A' && highScoreInitials[i] <= 'Z';
-  }
-  
-  // Sanity check
-  if (!highScoreInitialsValid) {
-    resetHighScoreData();
-  }
-  
   // Initialize functions
   initializeControl();
   initializeDisplay();
   initializeMusic();
+
+  // Check the reset-high-score button combination L+R+E
+  updateControl();
+  bool resetHighScore = isLPress() && isRPress() && !isDPress() && isEPress();
+  
+  // Load the high score data and perform sanity check
+  if (!resetHighScore) {
+    EEPROM.get(EEPROM_HIGH_SCORE, highScore);
+    Serial.print("highScore = ");
+    Serial.println(highScore);
+    for (byte i = 0; i < INITIALS_COUNT; i++) {
+      highScoreInitials[i] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i);
+      resetHighScore |= !(highScoreInitials[i] >= 'A' && highScoreInitials[i] <= 'Z');
+    }
+  }
+  
+  // Reset the high score if necessary
+  if (resetHighScore) {
+    resetHighScoreData();
+  }
 }
 
 void loop() {
