@@ -391,6 +391,7 @@ void gameOver() {
     uint32_t flashStartMillis = millis();
     bool flashOn, wasFlashOn = false;
     bool redraw;  // The display is only updated if this is true
+    updateControl();  // One extra call to clear the last encoder rotation
     do {
       updateControl();
       redraw = false;

@@ -5,7 +5,7 @@ const uint16_t NOTE_FREQUENCIES[26] = {
   440, 466, 494, 523, 554, 587, 622, 659, 698, 740, 784, 831, 880};
 
 // Note durations in milliseconds
-uint16_t NOTE_DURATIONS[6];
+uint16_t NOTE_DURATIONS[VALUE_COUNT];
 
 // The silence at the end of each note in milliseconds
 uint16_t DURA_DECAY = 0;
@@ -26,7 +26,7 @@ const uint16_t
     7 + 5 + 5 + 4 +
     2 + 2 + 2 + 3 +
     2 + 2 + 3 + 2),
-  TRACK_1_LENGTH = 5,
+  TRACK_1_LENGTH = 8,
   TRACK_2_LENGTH = 7;
 
 const uint16_t TRACK_LENGTHS[TRACK_COUNT] = {
@@ -55,7 +55,7 @@ Pitch themeSongPitches[TRACK_0_LENGTH] = {
 
 // The pitches of notes in the game over track
 Pitch gameOverPitches[TRACK_1_LENGTH] = {
-  E4, D4, C4, B4, A4n};
+  A4n, B4, C4, D4, E4, G4b, A5b, A5n};  // minor scale
 
 // The pitches of notes in the high score track
 Pitch highScorePitches[TRACK_2_LENGTH] = {
@@ -85,11 +85,12 @@ Value themeSongValues[TRACK_0_LENGTH] = {
 
 // The values of notes in the game over track
 Value gameOverValues[TRACK_1_LENGTH] = {
-  v8TH, v8TH, v8TH, v8TH, v2ND};
+//  v8TH, v8TH, v8TH, v8TH, v2ND};
+  v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v4TH};
 
 // The values of notes in the high score track
 Value highScoreValues[TRACK_2_LENGTH] = {
-  v2ND, v8TH, v4TH_DOT, v4TH, v4TH, v4TH, v2ND};
+  v8TH_DOT, v16TH, v16TH, v8TH, v8TH, v8TH, v4TH_DOT};
 
 // Array of pointers to track value arrays
 Value *trackValues[TRACK_COUNT] = {themeSongValues, gameOverValues, highScoreValues};
@@ -127,6 +128,8 @@ void calculateTempo(uint16_t v16thDuration) {
   NOTE_DURATIONS[3] = 4 * v16thDuration;
   NOTE_DURATIONS[4] = 6 * v16thDuration;
   NOTE_DURATIONS[5] = 8 * v16thDuration;
+  NOTE_DURATIONS[6] = 12 * v16thDuration;
+  NOTE_DURATIONS[7] = 16 * v16thDuration;
   DURA_DECAY = v16thDuration / 6;
 }
 

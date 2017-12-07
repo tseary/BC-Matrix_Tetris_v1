@@ -23,7 +23,8 @@ enum Pitch : byte {
 
 // Symbols for note values (and indexes for NOTE_DURATIONS[])
 enum Value : byte {
-  v16TH, v8TH, v8TH_DOT, v4TH, v4TH_DOT, v2ND, v1ST
+  v16TH, v8TH, v8TH_DOT, v4TH, v4TH_DOT, v2ND, v2ND_DOT, v1ST,
+  VALUE_COUNT
 };
 
 // Differential audio output pins
@@ -58,22 +59,25 @@ void setup() {
 
 void loop() {
   // Wait in silence
-  while (gameLevel == 0 || !soundOn) {
+  // This loop breaks when:
+  // - the sound is on, AND
+  // - the game level is not zero OR the track number is not zero
+  while (!soundOn || (gameLevel == 0 && trackNumber == 0)) {
     checkCommand();
   }
-
+  
   // Clear the track change flag before entering the play loop
   trackChangeFlag = false;
   
   // Play track
   // This loop breaks when:
   // - the last note in the track is played, OR
-  // - the game level is zero and the track number is zero, OR
   // - the sound is off, OR
-  // - the track was changed
+  // - the game level is zero AND the track number is zero, OR
+  // - the track changes
   uint16_t decayDuration;
-  for (uint16_t i = 0; i < getTrackLength(trackNumber) &&
-      (gameLevel > 0 || trackNumber > 0) && soundOn && !trackChangeFlag; i++) {
+  for (uint16_t i = 0; i < getTrackLength(trackNumber) && soundOn &&
+      !(gameLevel == 0 && trackNumber == 0); i++) {
     // Slur 16th notes
     decayDuration = getNoteValue(trackNumber, i) != Value::v16TH ?
         getDecayDuration() : getDecayDuration() / 2;
@@ -89,20 +93,25 @@ void loop() {
     }
     
     checkCommand();
-  }
 
+    // If the track changes, break the loop without resetting the track number
+    if (trackChangeFlag) {
+      return;
+    }
+  }
+  
   // Return to default track after play is completed
   setTrackNumber(0);
-}
-
-void setTrackNumber(uint8_t track) {
-  trackChangeFlag = true;
-  trackNumber = track;
 }
 
 void setGameLevel(uint8_t level) {
   gameLevel = level;
   calculateTempo();
+}
+
+void setTrackNumber(uint8_t newTrack) {
+  trackChangeFlag = newTrack != trackNumber;
+  trackNumber = newTrack;
 }
 
 // Bit-bangs a tone on two pins with opposite phase
@@ -126,6 +135,6 @@ void badToneDifferential(byte pPin, byte nPin, uint16_t frequency, uint16_t dura
     digitalWrite(nPin, HIGH);
     delayMicroseconds(period - halfPeriod);
     digitalWrite(nPin, LOW);
-  } while (millis() < endTime);
+  } while (millis() < endTime && !trackChangeFlag);
 }
 
