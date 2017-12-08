@@ -38,8 +38,8 @@ const byte ENCODER_B_PIN = 2; // red
 
 Encoder encoder(ENCODER_A_PIN, ENCODER_B_PIN);
 
-long lastPosition = 0;
-long nextPosition = 0;
+long lastPosition = 0,
+  nextPosition = 0;
 
 void initializeControl() {
   // Active-low pushbuttons
@@ -100,7 +100,10 @@ bool isEPress() {
 
 void updateEncoder() {
   lastPosition = nextPosition;
-  nextPosition = (encoder.read() + 2) / 4;  // Encoder detents are spaces four counts apart
+
+  // Encoder detents are four counts apart
+  long encoderValue = encoder.read();
+  nextPosition = (encoderValue + (encoderValue >= 0 ? 2 : -2)) / 4;
 }
 
 // Gets the change in encoder position

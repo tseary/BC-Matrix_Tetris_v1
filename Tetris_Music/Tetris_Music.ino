@@ -63,6 +63,7 @@ void loop() {
   // - the sound is on, AND
   // - the game level is not zero OR the track number is not zero
   while (!soundOn || (gameLevel == 0 && trackNumber == 0)) {
+    // TODO low-power sleep if !soundOn
     checkCommand();
   }
   
@@ -135,6 +136,6 @@ void badToneDifferential(byte pPin, byte nPin, uint16_t frequency, uint16_t dura
     digitalWrite(nPin, HIGH);
     delayMicroseconds(period - halfPeriod);
     digitalWrite(nPin, LOW);
-  } while (millis() < endTime && !trackChangeFlag);
+  } while (millis() < endTime);
 }
 

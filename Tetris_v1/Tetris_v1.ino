@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include "Tetramino.h"
 
-#define DEBUG_SERIAL true
+#define DEBUG_SERIAL false
 
 // Game board
 const byte BOARD_WIDTH = 5;   // The width of the play area
@@ -487,7 +487,9 @@ void gameOver() {
     }
   }
   
+#if DEBUG_SERIAL
   Serial.println("Game Over!");
+#endif
 }
 
 // Helper
