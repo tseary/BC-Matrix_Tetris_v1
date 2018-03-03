@@ -35,6 +35,17 @@ void initializeDisplay() {
   ledDriver.setRamConfiguration(AS1130::RamConfiguration1);
   ledDriver.setOnOffFrameAllOff(0);
   ledDriver.setBlinkAndPwmSetAll(0);
+  
+  // Dim the bottom six rows for multi-colour display
+  // TODO Make dependent on EEPROM
+  const uint8_t SET_INDEX = 0;  // 0 - 5
+  for (uint8_t y = 0; y < 6; y++) {
+    for (uint8_t x = 0; x < BOARD_WIDTH; x++) {
+      ledDriver.setPwmValue(SET_INDEX,
+        ledDriver.getLedIndex24x5(BOARD_HEIGHT - 1 - y, x), 0x10);
+    }
+  }
+  
   ledDriver.setCurrentSource(ledCurrent); // 0x00 = 0 mA, 0xff = 30 mA
   ledDriver.setScanLimit(AS1130::ScanLimitFull);
   ledDriver.setMovieEndFrame(AS1130::MovieEndWithFirstFrame);

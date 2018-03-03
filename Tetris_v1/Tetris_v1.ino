@@ -84,11 +84,8 @@ const byte
   EEPROM_HIGH_SCORE_INITIALS = 6,  // 3 chars
   EEPROM_LED_CURRENT = 10;
 
-
 // TODO
 // - add low-power functionality
-// - compose game-over sound
-
 
 void setup() {
 #if DEBUG_SERIAL
