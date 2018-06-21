@@ -118,6 +118,7 @@ void setup() {
   }
 
   // Enable/disable the sound
+  delay(50);  // Short delay before sending first music command
   sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
   
   // Adjust the brightness with the encoder
@@ -331,9 +332,7 @@ void gameOver() {
     drawBoard(true, y);
     delay(CURTAIN_MILLIS);
   }
-
-  // TODO Allow score etc. animation to be interrupted by user input
-
+  
   // Compare the score to the high score
   // TODO Forbid skipping score display if true
   bool newHighScore = score > highScore;  // True if the high score was just beaten

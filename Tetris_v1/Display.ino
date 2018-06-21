@@ -42,7 +42,7 @@ void initializeDisplay() {
   for (uint8_t y = 0; y < 6; y++) {
     for (uint8_t x = 0; x < BOARD_WIDTH; x++) {
       ledDriver.setPwmValue(SET_INDEX,
-        ledDriver.getLedIndex24x5(BOARD_HEIGHT - 1 - y, x), 0x10);
+        ledDriver.getLedIndex24x5(BOARD_HEIGHT - 1 - y, x), 0x1C);
     }
   }
   

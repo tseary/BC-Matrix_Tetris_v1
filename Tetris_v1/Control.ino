@@ -104,6 +104,13 @@ void updateEncoder() {
   // Encoder detents are four counts apart
   long encoderValue = encoder.read();
   nextPosition = (encoderValue + (encoderValue >= 0 ? 2 : -2)) / 4;
+
+#if DEBUG_SERIAL
+  Serial.print("encoderValue = ");
+  Serial.print(encoderValue);
+  Serial.print("\tnextPosition = ");
+  Serial.println(nextPosition);
+#endif
 }
 
 // Gets the change in encoder position
