@@ -39,83 +39,76 @@ const byte ENCODER_B_PIN = 2; // red
 Encoder encoder(ENCODER_A_PIN, ENCODER_B_PIN);
 
 long lastPosition = 0,
-  nextPosition = 0;
+nextPosition = 0;
 
 void initializeControl() {
-  // Active-low pushbuttons
-  pinMode(L_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(R_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(D_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(E_BUTTON_PIN, INPUT_PULLUP);
+	// Active-low pushbuttons
+	pinMode(L_BUTTON_PIN, INPUT_PULLUP);
+	pinMode(R_BUTTON_PIN, INPUT_PULLUP);
+	pinMode(D_BUTTON_PIN, INPUT_PULLUP);
+	pinMode(E_BUTTON_PIN, INPUT_PULLUP);
 }
 
 // Reads the buttons etc.
 void updateControl() {
-  // Store previous button states
-  wasLPressed = isLPressed;
-  wasRPressed = isRPressed;
-  wasDPressed = isDPressed;
-  wasEPressed = isEPressed;
-  
-  // Read buttons
-  isLPressed = !digitalRead(L_BUTTON_PIN);
-  isRPressed = !digitalRead(R_BUTTON_PIN);
-  isDPressed = !digitalRead(D_BUTTON_PIN);
-  isEPressed = !digitalRead(E_BUTTON_PIN);
-  
-  updateEncoder();
+	// Store previous button states
+	wasLPressed = isLPressed;
+	wasRPressed = isRPressed;
+	wasDPressed = isDPressed;
+	wasEPressed = isEPressed;
+
+	// Read buttons
+	isLPressed = !digitalRead(L_BUTTON_PIN);
+	isRPressed = !digitalRead(R_BUTTON_PIN);
+	isDPressed = !digitalRead(D_BUTTON_PIN);
+	isEPressed = !digitalRead(E_BUTTON_PIN);
+
+	updateEncoder();
 }
 
 bool isLClick() {
-  return !wasLPressed && isLPressed;
+	return !wasLPressed && isLPressed;
 }
 
 bool isRClick() {
-  return !wasRPressed && isRPressed;
+	return !wasRPressed && isRPressed;
 }
 
 bool isDClick() {
-  return !wasDPressed && isDPressed;
+	return !wasDPressed && isDPressed;
 }
 
 bool isEClick() {
-  return !wasEPressed && isEPressed;
+	return !wasEPressed && isEPressed;
 }
 
 bool isLPress() {
-  return isLPressed;
+	return isLPressed;
 }
 
 bool isRPress() {
-  return isRPressed;
+	return isRPressed;
 }
 
 bool isDPress() {
-  return isDPressed;
+	return isDPressed;
 }
 
 bool isEPress() {
-  return isEPressed;
+	return isEPressed;
 }
 
 void updateEncoder() {
-  lastPosition = nextPosition;
+	lastPosition = nextPosition;
 
-  // Encoder detents are four counts apart
-  long encoderValue = encoder.read();
-  nextPosition = (encoderValue + (encoderValue >= 0 ? 2 : -2)) / 4;
-
-#if DEBUG_SERIAL
-  Serial.print("encoderValue = ");
-  Serial.print(encoderValue);
-  Serial.print("\tnextPosition = ");
-  Serial.println(nextPosition);
-#endif
+	// Encoder detents are four counts apart
+	long encoderValue = encoder.read();
+	nextPosition = (encoderValue + (encoderValue >= 0 ? 2 : -2)) / 4;
 }
 
 // Gets the change in encoder position
 // Positive = clockwise
 long getEncoderChange() {
-  return nextPosition - lastPosition;
+	return nextPosition - lastPosition;
 }
 
