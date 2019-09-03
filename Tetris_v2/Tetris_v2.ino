@@ -217,6 +217,22 @@ void playGame() {
 				updateControl();
 				bool draw = false;  // Only draw if something changed
 
+				// Do pause
+				if (isEClick()) {
+					// TODO pause music
+
+					// TODO Show pause screen
+					// TODO Setting display text overwrites the game board data
+					draw = true;
+
+					do {
+						delay(1);	// TODO adjust this to match period of main loop
+						updateControl();
+					} while (!isEClick());
+
+					// TODO unpause music
+				}
+
 				// Move left
 				if (isLClick()) {
 					tryMoveTetraminoLeft();
@@ -295,9 +311,9 @@ void playGame() {
 				if (lineCount != 0) {
 					field[y - lineCount] = field[y];
 					field[y] = BORDER_MASK;
+				}
 			}
-		}
-	}
+				}
 
 		if (lineCount != 0) {
 			// Increase total count
@@ -325,9 +341,9 @@ void playGame() {
 				Serial.println(level);
 #endif
 			}
-}
-	}
-}
+		}
+			}
+		}
 
 // Draws the game over animation, displays the player's score, etc.
 void gameOver() {
@@ -472,7 +488,7 @@ void gameOver() {
 		drawBoard(false);
 		delay(DISPLAY_MILLIS);
 
-	} else {
+			} else {
 		// Show high score initials
 		clearBoard();
 		drawText5High(highScoreInitials);
@@ -493,7 +509,7 @@ void gameOver() {
 #ifdef DEBUG_SERIAL
 	Serial.println("Game Over!");
 #endif
-}
+		}
 
 // Helper
 // Returns true if the user clicked a button to break the delay
