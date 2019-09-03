@@ -313,7 +313,7 @@ void playGame() {
 					field[y] = BORDER_MASK;
 				}
 			}
-				}
+		}
 
 		if (lineCount != 0) {
 			// Increase total count
@@ -342,8 +342,8 @@ void playGame() {
 #endif
 			}
 		}
-			}
-		}
+	}
+}
 
 // Draws the game over animation, displays the player's score, etc.
 void gameOver() {
@@ -488,7 +488,7 @@ void gameOver() {
 		drawBoard(false);
 		delay(DISPLAY_MILLIS);
 
-			} else {
+	} else {
 		// Show high score initials
 		clearBoard();
 		drawText5High(highScoreInitials);
@@ -509,7 +509,7 @@ void gameOver() {
 #ifdef DEBUG_SERIAL
 	Serial.println("Game Over!");
 #endif
-		}
+}
 
 // Helper
 // Returns true if the user clicked a button to break the delay

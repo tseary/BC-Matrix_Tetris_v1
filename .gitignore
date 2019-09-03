@@ -1,5 +1,11 @@
 
 ASCII_Tetris.png
-Tetris_v2/Release/*
 Tetris_v2/.vs/*
 Tetris_v2/__vm/*
+Tetris_v2/Release/*
+TetrisMusic/.vs/*
+TetrisMusic/__vm/*
+TetrisMusic/Release/*
+TetrisMusic_MasterTest/.vs/*
+TetrisMusic_MasterTest/__vm/*
+TetrisMusic_MasterTest/Release/*

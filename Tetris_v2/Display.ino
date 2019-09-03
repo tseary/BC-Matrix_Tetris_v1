@@ -44,7 +44,7 @@ void initializeDisplay() {
 	EEPROM.get(EEPROM_PIXEL_BRIGHTNESS, pixelBrightnessRows);
 	const uint8_t SET_INDEX = 0;  // 0 - 5
 	for (uint8_t y = 0; y < BOARD_HEIGHT; y++) {
-		if (~(pixelBrightnessRows >> y) & 1) {
+		if (~pixelBrightnessRows & ((uint32_t)1 << y)) {
 			for (uint8_t x = 0; x < BOARD_WIDTH; x++) {
 				ledDriver.setPwmValue(SET_INDEX,
 					ledDriver.getLedIndex24x5(BOARD_HEIGHT - 1 - y, x), 0x1C);
