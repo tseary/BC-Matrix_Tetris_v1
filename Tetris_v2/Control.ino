@@ -16,10 +16,10 @@
 #include <Encoder.h>
 
 // Buttons
-const byte L_BUTTON_PIN = 8; // brown wire
-const byte R_BUTTON_PIN = 7; // gray wire
-const byte D_BUTTON_PIN = 6; // green wire
-const byte E_BUTTON_PIN = 4; // blue wire (encoder button)
+const uint8_t L_BUTTON_PIN = 8; // brown wire
+const uint8_t R_BUTTON_PIN = 7; // gray wire
+const uint8_t D_BUTTON_PIN = 6; // green wire
+const uint8_t E_BUTTON_PIN = 4; // blue wire (encoder button)
 
 bool isLPressed = false;
 bool isRPressed = false;
@@ -33,8 +33,8 @@ bool wasEPressed = false;
 
 // Encoder
 // The encoder pins are set to INPUT_PULLUP inside the Encoder class
-const byte ENCODER_A_PIN = 3; // yellow
-const byte ENCODER_B_PIN = 2; // red
+const uint8_t ENCODER_A_PIN = 3; // yellow
+const uint8_t ENCODER_B_PIN = 2; // red
 
 Encoder encoder(ENCODER_A_PIN, ENCODER_B_PIN);
 

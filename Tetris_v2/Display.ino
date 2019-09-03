@@ -122,7 +122,7 @@ void drawBoard(bool drawTetramino, int curtain) {
 }
 
 void drawUInt16(uint16_t score) {
-	for (byte i = 0; i == 0 || (i < 4 && score != 0); i++) {
+	for (uint8_t i = 0; i == 0 || (i < 4 && score != 0); i++) {
 		setDisplayDigit5Wide(score % 10, 0, BORDER_Y + 1 + 6 * i);
 		score /= 10;
 	}
@@ -136,7 +136,7 @@ void drawBlank() {
  * TEXT
  ******************************************************************************/
 
-const byte letters5High[26][5] = {
+const uint8_t letters5High[26][5] = {
   {0b10001, 0b10001, 0b11111, 0b10001, 0b01110},  // A
   {0b11110, 0b10001, 0b11110, 0b10001, 0b11110},  // B
   {0b01111, 0b10000, 0b10000, 0b10000, 0b01111},  // C
@@ -177,14 +177,14 @@ void drawText5High(const char* text) {
 			continue;
 		}
 		uint16_t y = FIELD_HEIGHT - 6 * (i + 1) + 1;
-		for (byte r = 0; r < 5; r++) {
+		for (uint8_t r = 0; r < 5; r++) {
 			field[y + r] = letters5High[c - 'A'][r] << BORDER_X;
 		}
 	}
 }
 
 // TODO Make a separate picture for this
-const byte scoreText[24] = {
+const uint8_t scoreText[24] = {
   0b01111,
   0b11000,
   0b00111,
@@ -211,7 +211,7 @@ const byte scoreText[24] = {
   0b11111};
 
 void drawTextScore() {
-	for (byte r = 0; r < 24; r++) {
+	for (uint8_t r = 0; r < 24; r++) {
 		field[FIELD_HEIGHT - 1 - r] = scoreText[r] << BORDER_X;
 	}
 }

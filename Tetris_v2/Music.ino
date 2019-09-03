@@ -1,5 +1,5 @@
 
-const byte
+const uint8_t
 OPCODE_LSB_PIN = 11,  // Data output
 OPCODE_MSB_PIN = 12,  // Data output
 SCK_PIN = 13; // Clock output
@@ -15,15 +15,15 @@ void initializeMusic() {
 }
 
 // A command may be comprised of one or more opcodes
-void sendMusicCommand(byte command) {
-	byte counter = command >> 4;
-	for (byte i = 0; i < counter; i++) {
+void sendMusicCommand(uint8_t command) {
+	uint8_t counter = command >> 4;
+	for (uint8_t i = 0; i < counter; i++) {
 		sendOpcode(0x0f);
 	}
 	sendOpcode(command);  // Top four bits are ignored
 }
 
-void sendOpcode(byte opcode) {
+void sendOpcode(uint8_t opcode) {
 	// First half
 	digitalWrite(OPCODE_LSB_PIN, opcode & 0b0001);
 	digitalWrite(OPCODE_MSB_PIN, opcode & 0b0010);

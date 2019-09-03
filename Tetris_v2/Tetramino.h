@@ -1,7 +1,7 @@
 
-const byte TETRAMINO_COUNT = 7;
+const uint8_t TETRAMINO_COUNT = 7;
 
-const byte
+const uint8_t
 		TETRAMINO_I = 0,
 		TETRAMINO_J = 1,
 		TETRAMINO_L = 2,
@@ -10,9 +10,9 @@ const byte
 		TETRAMINO_T = 5,
 		TETRAMINO_Z = 6;
     
-const byte TETRAMINO_NONE = 255;
+const uint8_t TETRAMINO_NONE = 255;
 
-const byte TETRAMINO_SIZE = 4;
+const uint8_t TETRAMINO_SIZE = 4;
 const uint16_t TETRAMINO_MASK = 0x000f;
 
 // Geometry data for each tetramino and rotation
