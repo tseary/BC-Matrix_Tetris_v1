@@ -185,7 +185,7 @@ void newGame() {
 	fallPeriod = getFallPeriod(level);
 
 	clearBoard();
-	drawBoard();
+	drawBoard(false);
 
 	sendMusicCommand(COMMAND_LEVEL_ONE);
 }
@@ -331,9 +331,6 @@ void playGame() {
 
 // Draws the game over animation, displays the player's score, etc.
 void gameOver() {
-	// Clear the active tetramino
-	tetraminoType = TETRAMINO_NONE;
-
 	sendMusicCommand(COMMAND_GAME_OVER);
 
 	// Fill animation
