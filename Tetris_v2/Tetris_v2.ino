@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 #include "Tetramino.h"
 
-#define DEBUG_SERIAL false
+#define DEBUG_SERIAL true
 
 // Game board
 const byte BOARD_WIDTH = 5;   // The width of the play area
@@ -227,30 +227,62 @@ void playGame() {
 					draw = true;
 				}
 
+				uint8_t debugOrigX = tetraminoX;
+
 				// Rotate CCW
 				long positionChange = getEncoderChange();
 				if (positionChange != 0) {
+#if DEBUG_SERIAL
+					Serial.println();
+#endif
 					for (byte i = 0; i < 4; i++) {  // This should work as an infinite loop, but we use a for loop for safety
+#if DEBUG_SERIAL
+						Serial.println(F("try rotate"));
+#endif
 						if (!(positionChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {
 							// Couldn't rotate, check where the collision is and try to move away from the walls
+#if DEBUG_SERIAL
+							Serial.println(F("can't rotate"));
+#endif
 							if (collisionLine & ~(0xffff << BORDER_X)) {  // Collision on right
+#if DEBUG_SERIAL
+								Serial.println(F("try move left"));
+#endif
 								if (!tryMoveTetraminoLeft()) {
 									// Couldn't move left, break
+#if DEBUG_SERIAL
+									Serial.println(F("can't move left"));
+#endif
+									tetraminoX = debugOrigX;	// Undo move
 									break;
 								}
 							} else if (collisionLine & (0xffff << (BOARD_WIDTH + BORDER_X))) {  // Collision on left
+#if DEBUG_SERIAL
+								Serial.println(F("try move right"));
+#endif
 								if (!tryMoveTetraminoRight()) {
 									// Couldn't move right, break
+#if DEBUG_SERIAL
+									Serial.println(F("can't move right"));
+#endif
+									tetraminoX = debugOrigX;	// Undo move
 									break;
 								}
 							} else {  // Collision in center
+#if DEBUG_SERIAL
+								Serial.println(F("collision in center"));
+#endif
+								tetraminoX = debugOrigX;	// Undo move
 								break;
 							}
 						} else {
+#if DEBUG_SERIAL
+							Serial.println(F("rotation succeeded"));
+#endif
 							break;  // Rotation succeeded
 						}
 					}
-					draw = true;
+					draw = true;	// TODO maybe move to "Rotation succeeded"
 				}
 
 				if (draw) {
@@ -613,6 +645,9 @@ bool tryMoveTetraminoDown() {
 
  // Spawns a tetramino at the top of the screen
 void setTetramino(byte type) {
+#if DEBUG_SERIAL
+	type = TETRAMINO_I;
+#endif
 	tetraminoType = type;
 	tetraminoR = 0;
 	tetraminoX = (BOARD_WIDTH - TETRAMINO_SIZE) / 2 + BORDER_X;
