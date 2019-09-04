@@ -19,6 +19,8 @@ COMMAND_SILENCE = 0x00,
 COMMAND_LEVEL_ONE = 0x01,
 COMMAND_LEVEL_UP = 0x02,
 COMMAND_HIGH_SCORE = 0x03,
+COMMAND_PAUSE = 0x08,
+COMMAND_UNPAUSE = 0x09,
 COMMAND_SOUND_ON = 0x0b,
 COMMAND_SOUND_OFF = 0x0c,
 COMMAND_GAME_OVER = 0x0d;
@@ -70,6 +72,14 @@ void checkCommand() {
 	case COMMAND_GAME_OVER:
 		setGameLevel(0);
 		setTrackNumber(1);
+		break;
+
+	case COMMAND_PAUSE:
+		paused = true;
+		break;
+
+	case COMMAND_UNPAUSE:
+		paused = false;
 		break;
 
 	case COMMAND_SOUND_ON:
