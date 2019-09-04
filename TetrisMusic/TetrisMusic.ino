@@ -29,8 +29,8 @@ const byte SPEAKER_N_PIN = 3; // Inverted output
 uint8_t trackNumber = 0;
 // Flag to indicate that the track was changed
 bool trackChangeFlag = false;
-// Flag to indicate that the game level was set
-bool levelSetFlag = false;
+// Flag to indicate that the game level was set to 1
+bool gameStartFlag = false;
 
 // The current game level, which determines the song tempo (level 0 = silence)
 uint8_t gameLevel = 0;
@@ -68,7 +68,7 @@ void loop() {
 
 	// Clear the track change flag before entering the play loop
 	trackChangeFlag = false;
-	levelSetFlag = false;
+	gameStartFlag = false;
 
 	// Play track
 	// This loop breaks when:
@@ -93,12 +93,12 @@ void loop() {
 			delay(decayDuration);
 		}
 
-		// Wait while paused, but check the command at least once
+		// Wait while paused
 		do {
 			checkCommand();
 
 			// If the track changes, break the loop without resetting the track number
-			if (trackChangeFlag || levelSetFlag) {
+			if (trackChangeFlag || gameStartFlag) {
 				return;
 			}
 		} while (paused);
@@ -109,7 +109,7 @@ void loop() {
 }
 
 void setGameLevel(uint8_t level) {
-	levelSetFlag = true;
+	gameStartFlag = level == 1;
 	gameLevel = level;
 	calculateTempo();
 }

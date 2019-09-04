@@ -23,5 +23,8 @@
     <ClInclude Include="__vm\.TetrisMusic.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PitchValue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
