@@ -63,7 +63,6 @@ uint16_t linesCleared = 0;
 uint16_t level = 1;
 uint16_t fallPeriod = 1000;
 const uint16_t MINIMUM_FALL_PERIOD = 10;
-const uint16_t LOOP_DELAY_MICROS = 100;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 uint16_t highScore = 0;
@@ -233,7 +232,7 @@ void playGame() {
 					do {
 						delay(1);
 						updateControl();
-					} while (!isEClick());
+					} while (!isAnyClick() && !getEncoderChange());
 
 					// Unpause music
 					sendMusicCommand(COMMAND_UNPAUSE);
@@ -289,9 +288,6 @@ void playGame() {
 
 				// Allow dropping if D is released
 				canDropPiece |= !isDPress();
-
-				// Throttle game loop for switch debouncing
-				delayMicroseconds(LOOP_DELAY_MICROS);
 			} while (millis() < lastFallMillis +
 				(canDropPiece && isDPress() ? MINIMUM_FALL_PERIOD : fallPeriod));
 

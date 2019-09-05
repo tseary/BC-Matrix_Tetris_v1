@@ -15,6 +15,9 @@
 
 #include <Encoder.h>
 
+// Debouncing
+const uint16_t DEBOUNCE_MICROS = 100;
+
 // Buttons
 const uint8_t L_BUTTON_PIN = 8; // brown wire
 const uint8_t R_BUTTON_PIN = 7; // gray wire
@@ -51,6 +54,9 @@ void initializeControl() {
 
 // Reads the buttons etc.
 void updateControl() {
+	// Delay first to minimize latency between button read and resulting action
+	delayMicroseconds(DEBOUNCE_MICROS);
+
 	// Store previous button states
 	wasLPressed = isLPressed;
 	wasRPressed = isRPressed;
@@ -80,6 +86,10 @@ bool isDClick() {
 
 bool isEClick() {
 	return !wasEPressed && isEPressed;
+}
+
+bool isAnyClick() {
+	return isLClick() || isRClick() || isDClick() || isEClick();
 }
 
 bool isLPress() {
