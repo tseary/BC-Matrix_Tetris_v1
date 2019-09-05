@@ -62,6 +62,8 @@ uint16_t score = 0;
 uint16_t linesCleared = 0;
 uint16_t level = 1;
 uint16_t fallPeriod = 1000;
+const uint16_t MINIMUM_FALL_PERIOD = 10;
+const uint16_t LOOP_DELAY_MICROS = 100;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 uint16_t highScore = 0;
@@ -287,7 +289,11 @@ void playGame() {
 
 				// Allow dropping if D is released
 				canDropPiece |= !isDPress();
-			} while (millis() < lastFallMillis + (canDropPiece && isDPress() ? 10 : fallPeriod));
+
+				// Throttle game loop for switch debouncing
+				delayMicroseconds(LOOP_DELAY_MICROS);
+			} while (millis() < lastFallMillis +
+				(canDropPiece && isDPress() ? MINIMUM_FALL_PERIOD : fallPeriod));
 
 			// Move the piece down
 			if (canTetraminoMoveDown()) {
@@ -553,7 +559,8 @@ uint16_t getLevel(uint16_t linesCleared) {
 // Gets the number of milliseconds between steps of a falling piece.
 // The period is initially 1000 and decreases exponentially as the level increases. 
 uint16_t getFallPeriod(uint16_t level) {
-	return round(1000 * pow(0.774264, level - 1));  // 10x speed in level 10
+	return max(MINIMUM_FALL_PERIOD,
+		round(1000 * pow(0.774264, level - 1)));  // 10x speed in level 10
 }
 
 // Clears the high score and initials from EEPROM
