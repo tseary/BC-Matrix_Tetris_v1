@@ -1,5 +1,7 @@
 
 #include <EEPROM.h>
+#include <LowPower.h>
+#include <LRAS1130.h>
 #include "Tetramino.h"
 
 // Uncomment these to enable debug behaviour
@@ -154,7 +156,7 @@ void setup() {
 
 void adjustBrightness() {
 	// Get the display current
-	int currentInput = getLEDCurrent();
+	int16_t currentInput = getLEDCurrent();
 
 	// Draw something to show the brightness
 	drawText5High("XXXX");
@@ -165,8 +167,8 @@ void adjustBrightness() {
 		updateControl();
 		currentInput += 0x10 * getEncoderChange();
 		currentInput = constrain(currentInput, 0x0f, 0xff);
-		setLEDCurrent((uint8_t)currentInput);
-		delay(10);
+		setLEDCurrent((uint8_t)currentInput, true);
+		LowPower.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
 	} while (!isRClick());
 }
 
@@ -225,14 +227,19 @@ void playGame() {
 					// Pause music
 					sendMusicCommand(COMMAND_PAUSE);
 
-					// TODO Show pause screen
-					// TODO Setting display text overwrites the game board data
-					draw = true;
+					// Dim display by reducing current
+					uint8_t originalCurrent = getLEDCurrent();
+					setLEDCurrent(originalCurrent / 3, false);
 
+					// Wait for any input
 					do {
-						delay(1);
+						LowPower.powerDown(SLEEP_15MS, ADC_OFF, BOD_OFF);
 						updateControl();
 					} while (!isAnyClick() && !getEncoderChange());
+
+					// Restore display brightness
+					setLEDCurrent(originalCurrent, false);
+					draw = true;
 
 					// Unpause music
 					sendMusicCommand(COMMAND_UNPAUSE);

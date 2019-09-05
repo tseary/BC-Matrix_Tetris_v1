@@ -69,10 +69,12 @@ uint8_t getLEDCurrent() {
 	return ledCurrent;
 }
 
-void setLEDCurrent(uint8_t newCurrent) {
+void setLEDCurrent(uint8_t newCurrent, bool save) {
 	ledCurrent = (AS1130::Current)newCurrent;
 	ledDriver.setCurrentSource(ledCurrent);
-	EEPROM.put(EEPROM_LED_CURRENT, ledCurrent);
+	if (save) {
+		EEPROM.put(EEPROM_LED_CURRENT, ledCurrent);
+	}
 }
 
 // Updates the board display
