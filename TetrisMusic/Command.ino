@@ -84,6 +84,7 @@ void checkCommand() {
 
 	case COMMAND_SOUND_ON:
 		soundOn = true;
+		setTrackNumber(0);	// Clear any sounds that have been requested
 		break;
 
 	case COMMAND_SOUND_OFF:
