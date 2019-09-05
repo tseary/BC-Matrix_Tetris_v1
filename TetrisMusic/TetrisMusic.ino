@@ -15,6 +15,7 @@
  // The speaker pin connects, in series, to a 100 uF capacitor, 120 Ohm resistor,
  // 5 kOhm rheostat (volume control), and 8 Ohm speaker to ground.
 
+#include <avr/sleep.h>
 #include "PitchValue.h"
 
 // Differential audio output pins
@@ -42,6 +43,7 @@ bool soundOn = true;
 bool paused = false;
 
 void setup() {
+
 	// Set the audio output pins
 	pinMode(SPEAKER_P_PIN, OUTPUT);
 	pinMode(SPEAKER_N_PIN, OUTPUT);
@@ -50,6 +52,11 @@ void setup() {
 	calculateTempo();
 
 	initializeCommand();
+
+	// Set up low power sleep that can be interrupted by pin change
+	// Note that sleep does not start immediately (but maybe it should?)
+	ADCSRA &= ~(1 << ADEN);	// Turn off ADC
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 }
 
 void loop() {
@@ -58,8 +65,11 @@ void loop() {
 	// - the sound is on, AND
 	// - the game level is not zero OR the track number is not zero
 	while (!soundOn || (gameLevel == 0 && trackNumber == 0)) {
-		// TODO low-power sleep if !soundOn
-		delay(1);
+		// Enter sleep mode
+		sleep_enable();
+		sleep_cpu();
+		sleep_disable();
+
 		checkCommand();
 	}
 
