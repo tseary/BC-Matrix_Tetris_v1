@@ -21,13 +21,13 @@ const uint8_t TRACK_COUNT = 3;
 // track 2 = high score
 
 const uint16_t
-  TRACK_0_LENGTH =
-    (8 + 6 + 5 + 4 +
-    7 + 5 + 5 + 4 +
-    2 + 2 + 2 + 3 +
-    2 + 2 + 3 + 2),
-  TRACK_1_LENGTH = 8,
-  TRACK_2_LENGTH = 7;
+TRACK_0_LENGTH =
+(8 + 6 + 5 + 4 +
+	7 + 5 + 5 + 4 +
+	2 + 2 + 2 + 3 +
+	2 + 2 + 3 + 2),
+	TRACK_1_LENGTH = 8,
+	TRACK_2_LENGTH = 7;
 
 const uint16_t TRACK_LENGTHS[TRACK_COUNT] = {
   TRACK_0_LENGTH,
@@ -85,8 +85,8 @@ Value themeSongValues[TRACK_0_LENGTH] = {
 
 // The values of notes in the game over track
 Value gameOverValues[TRACK_1_LENGTH] = {
-//  v8TH, v8TH, v8TH, v8TH, v2ND};
-  v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v4TH};
+	//  v8TH, v8TH, v8TH, v8TH, v2ND};
+	  v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v16TH, v4TH};
 
 // The values of notes in the high score track
 Value highScoreValues[TRACK_2_LENGTH] = {
@@ -96,40 +96,40 @@ Value highScoreValues[TRACK_2_LENGTH] = {
 Value *trackValues[TRACK_COUNT] = {themeSongValues, gameOverValues, highScoreValues};
 
 uint16_t getTrackLength(uint8_t track) {
-  return TRACK_LENGTHS[track];
+	return TRACK_LENGTHS[track];
 }
 
 uint16_t getNoteFrequency(uint8_t track, uint16_t noteIndex) {
-  return NOTE_FREQUENCIES[trackPitches[track][noteIndex]];
+	return NOTE_FREQUENCIES[trackPitches[track][noteIndex]];
 }
 
 uint16_t getNoteDuration(uint8_t track, uint16_t noteIndex) {
-  return NOTE_DURATIONS[getNoteValue(track, noteIndex)];
+	return NOTE_DURATIONS[getNoteValue(track, noteIndex)];
 }
 
 Value getNoteValue(uint8_t track, uint16_t noteIndex) {
-  return trackValues[track][noteIndex];
+	return trackValues[track][noteIndex];
 }
 
 uint16_t getDecayDuration() {
-  return DURA_DECAY;
+	return DURA_DECAY;
 }
 
 // Calculate note values using the game level to determine tempo
 void calculateTempo() {
-  calculateTempo(100 - 6 * gameLevel);
+	calculateTempo(100 - 6 * gameLevel);
 }
 
 // Calculate note values based on the length of a 16th note in milliseconds
 void calculateTempo(uint16_t v16thDuration) {
-  NOTE_DURATIONS[0] = v16thDuration;
-  NOTE_DURATIONS[1] = 2 * v16thDuration;
-  NOTE_DURATIONS[2] = 3 * v16thDuration;
-  NOTE_DURATIONS[3] = 4 * v16thDuration;
-  NOTE_DURATIONS[4] = 6 * v16thDuration;
-  NOTE_DURATIONS[5] = 8 * v16thDuration;
-  NOTE_DURATIONS[6] = 12 * v16thDuration;
-  NOTE_DURATIONS[7] = 16 * v16thDuration;
-  DURA_DECAY = v16thDuration / 6;
+	NOTE_DURATIONS[0] = v16thDuration;
+	NOTE_DURATIONS[1] = 2 * v16thDuration;
+	NOTE_DURATIONS[2] = 3 * v16thDuration;
+	NOTE_DURATIONS[3] = 4 * v16thDuration;
+	NOTE_DURATIONS[4] = 6 * v16thDuration;
+	NOTE_DURATIONS[5] = 8 * v16thDuration;
+	NOTE_DURATIONS[6] = 12 * v16thDuration;
+	NOTE_DURATIONS[7] = 16 * v16thDuration;
+	DURA_DECAY = v16thDuration / 6;
 }
 
