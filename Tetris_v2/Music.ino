@@ -1,15 +1,23 @@
 
 const uint8_t
-OPCODE_LSB_PIN = 11,  // Data output
-OPCODE_MSB_PIN = 12,  // Data output
-SCK_PIN = 13; // Clock output
+MUSIC_RESET_PIN = 10,	// ATTINY reset pin
+OPCODE_LSB_PIN = 11,	// Data output (mosi)
+OPCODE_MSB_PIN = 12,	// Data output (miso)
+SCK_PIN = 13;			// Clock output
 
 const uint16_t OPCODE_SETTLING_MICROS = 100;
 const uint16_t OPCODE_PROCESSING_MICROS = 300;
 
 void initializeMusic() {
+	// Reset the music controller
+	pinMode(MUSIC_RESET_PIN, OUTPUT);
+	digitalWrite(MUSIC_RESET_PIN, LOW);
+	delayMicroseconds(5);	// Minimum reset pulse width is 2.5 us
+	digitalWrite(MUSIC_RESET_PIN, HIGH);
+
 	pinMode(OPCODE_LSB_PIN, OUTPUT);
 	pinMode(OPCODE_MSB_PIN, OUTPUT);
+
 	pinMode(SCK_PIN, OUTPUT);
 	digitalWrite(SCK_PIN, LOW);
 }

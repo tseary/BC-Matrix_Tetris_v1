@@ -127,7 +127,7 @@ void setup() {
 	}
 
 	// Enable/disable the sound
-	delay(50);  // Short delay before sending first music command
+	delay(75);  // Short delay before sending first music command
 	sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
 
 	// Adjust the brightness with the encoder
