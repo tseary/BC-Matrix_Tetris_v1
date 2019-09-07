@@ -1,16 +1,4 @@
 
-// The game is controlled by a 5-way navigation switch, which
-// is interfaced through a single analog pin. The switch connects
-// a different resistor to ground for each direction:
-// down   = 47k
-// up     = 27k
-// right  = 15k
-// left   = 6.8k
-// center = short
-// There is also an external 10k pull-up resistor to 5 V.
-// The five buttons are mutually exclusive, meaning that pressing
-// multiple buttons simultaneously may cause undesired behaviour.
-
 // This file manages debouncing and detects button clicks.
 
 #include <Encoder.h>
@@ -121,4 +109,3 @@ void updateEncoder() {
 long getEncoderChange() {
 	return nextPosition - lastPosition;
 }
-
