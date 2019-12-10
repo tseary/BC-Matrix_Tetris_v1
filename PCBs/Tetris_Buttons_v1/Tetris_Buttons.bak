@@ -1,0 +1,259 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:Custom
+LIBS:Tetris_Buttons-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L SW_PUSH S1
+U 1 1 59FE097B
+P 6500 2800
+F 0 "S1" H 6650 2910 50  0000 C CNN
+F 1 "LEFT" H 6500 2720 50  0000 C CNN
+F 2 "Custom_Library:Tactile_Button_12mm" H 6500 2650 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/te-connectivity-alcoswitch-switches/FSM103/450-1158-ND/701085" H 6500 2800 60  0001 C CNN
+	1    6500 2800
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR01
+U 1 1 59FE0ADA
+P 7600 3200
+F 0 "#PWR01" H 7600 2950 50  0001 C CNN
+F 1 "GND" H 7600 3050 50  0000 C CNN
+F 2 "" H 7600 3200 60  0000 C CNN
+F 3 "" H 7600 3200 60  0000 C CNN
+	1    7600 3200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7600 2600 7600 3200
+Wire Wire Line
+	7600 2600 7500 2600
+Wire Wire Line
+	7600 3100 7200 3100
+Connection ~ 7600 3100
+Wire Wire Line
+	6800 2800 7600 2800
+Connection ~ 7600 2800
+$Comp
+L SW_PUSH S2
+U 1 1 59FE0EE2
+P 7200 2600
+F 0 "S2" H 7350 2710 50  0000 C CNN
+F 1 "RIGHT" H 7200 2520 50  0000 C CNN
+F 2 "Custom_Library:Tactile_Button_12mm" H 7200 2450 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/te-connectivity-alcoswitch-switches/FSM103/450-1158-ND/701085" H 7200 2600 60  0001 C CNN
+	1    7200 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L SW_PUSH S3
+U 1 1 59FE0F0C
+P 6900 3100
+F 0 "S3" H 7050 3210 50  0000 C CNN
+F 1 "DOWN" H 6900 3020 50  0000 C CNN
+F 2 "Custom_Library:Tactile_Button_12mm" H 6900 2950 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/te-connectivity-alcoswitch-switches/FSM103/450-1158-ND/701085" H 6900 3100 60  0001 C CNN
+	1    6900 3100
+	1    0    0    -1  
+$EndComp
+$Comp
+L ENCODER_ROTARY_W_SWITCH S4
+U 1 1 59FE10D0
+P 3600 2700
+F 0 "S4" H 3600 2450 60  0000 C CNN
+F 1 "ENCODER" H 3600 2950 60  0000 C CNN
+F 2 "Custom_Library:Encoder_Rotary_w_Switch" H 3600 2400 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/bourns-inc/PEC11R-4215K-S0024/PEC11R-4215K-S0024-ND/4499662" H 3600 2700 60  0001 C CNN
+	1    3600 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3200 2700 3300 2700
+$Comp
+L GND #PWR02
+U 1 1 59FE113D
+P 4000 2600
+F 0 "#PWR02" H 4000 2350 50  0001 C CNN
+F 1 "GND" V 4000 2400 50  0000 C CNN
+F 2 "" H 4000 2600 60  0000 C CNN
+F 3 "" H 4000 2600 60  0000 C CNN
+	1    4000 2600
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4000 2800 3900 2800
+Text GLabel 6100 2600 0    50   Input ~ 0
+R
+Text GLabel 6100 2800 0    50   Input ~ 0
+L
+Text GLabel 6100 3100 0    50   Input ~ 0
+D
+Wire Wire Line
+	6100 3100 6600 3100
+Wire Wire Line
+	6200 2800 6100 2800
+Wire Wire Line
+	6100 2600 6900 2600
+Text GLabel 4000 2800 2    50   Input ~ 0
+E
+Wire Wire Line
+	4000 2600 3900 2600
+Text GLabel 3200 2600 0    50   Input ~ 0
+A
+Text GLabel 3200 2800 0    50   Input ~ 0
+B
+Wire Wire Line
+	3200 2800 3300 2800
+Wire Wire Line
+	3200 2600 3300 2600
+$Comp
+L GND #PWR03
+U 1 1 59FE12B8
+P 5400 2800
+F 0 "#PWR03" H 5400 2550 50  0001 C CNN
+F 1 "GND" V 5400 2600 50  0000 C CNN
+F 2 "" H 5400 2800 60  0000 C CNN
+F 3 "" H 5400 2800 60  0000 C CNN
+	1    5400 2800
+	0    -1   -1   0   
+$EndComp
+$Comp
+L CONN_02X04 J1
+U 1 1 59FE1308
+P 5050 2750
+F 0 "J1" H 5050 3000 50  0000 C CNN
+F 1 "CONN" H 5050 2500 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_2x04_Pitch2.54mm" H 5050 2450 30  0000 C CNN
+F 3 "" H 5050 1550 60  0000 C CNN
+	1    5050 2750
+	1    0    0    -1  
+$EndComp
+Text GLabel 4700 2900 0    50   Input ~ 0
+E
+Text GLabel 4700 2600 0    50   Input ~ 0
+A
+Text GLabel 4700 2800 0    50   Input ~ 0
+B
+Wire Wire Line
+	4700 2600 4800 2600
+Wire Wire Line
+	4800 2900 4700 2900
+Wire Wire Line
+	4700 2800 4800 2800
+Wire Wire Line
+	4800 2700 4700 2700
+Text GLabel 5400 2700 2    50   Input ~ 0
+R
+Text GLabel 5400 2600 2    50   Input ~ 0
+L
+Text GLabel 5400 2900 2    50   Input ~ 0
+D
+Wire Wire Line
+	5400 2900 5300 2900
+Wire Wire Line
+	5300 2600 5400 2600
+Wire Wire Line
+	5400 2800 5300 2800
+Wire Wire Line
+	5300 2700 5400 2700
+$Comp
+L GND #PWR04
+U 1 1 59FE0F76
+P 3200 2700
+F 0 "#PWR04" H 3200 2450 50  0001 C CNN
+F 1 "GND" V 3200 2500 50  0000 C CNN
+F 2 "" H 3200 2700 60  0000 C CNN
+F 3 "" H 3200 2700 60  0000 C CNN
+	1    3200 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR05
+U 1 1 59FE12CF
+P 4700 2700
+F 0 "#PWR05" H 4700 2450 50  0001 C CNN
+F 1 "GND" V 4700 2500 50  0000 C CNN
+F 2 "" H 4700 2700 60  0000 C CNN
+F 3 "" H 4700 2700 60  0000 C CNN
+	1    4700 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L CONN_01X01 H1
+U 1 1 59FE2195
+P 4300 4100
+F 0 "H1" H 4300 4200 50  0000 C CNN
+F 1 "M2" V 4400 4100 50  0000 C CNN
+F 2 "Custom_Library:M2_Isolated" H 4300 4000 30  0000 C CNN
+F 3 "" H 4300 4100 60  0000 C CNN
+	1    4300 4100
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 4300 4300
+$Comp
+L CONN_01X01 H2
+U 1 1 59FE2243
+P 4600 4100
+F 0 "H2" H 4600 4200 50  0000 C CNN
+F 1 "M2" V 4700 4100 50  0000 C CNN
+F 2 "Custom_Library:M2_Isolated" H 4600 4000 30  0000 C CNN
+F 3 "" H 4600 4100 60  0000 C CNN
+	1    4600 4100
+	0    -1   -1   0   
+$EndComp
+$Comp
+L CONN_01X01 H3
+U 1 1 59FE2270
+P 4900 4100
+F 0 "H3" H 4900 4200 50  0000 C CNN
+F 1 "M2" V 5000 4100 50  0000 C CNN
+F 2 "Custom_Library:M2_Isolated" H 4900 4000 30  0000 C CNN
+F 3 "" H 4900 4100 60  0000 C CNN
+	1    4900 4100
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 4900 4300
+NoConn ~ 4600 4300
+$EndSCHEMATC

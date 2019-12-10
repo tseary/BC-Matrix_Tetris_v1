@@ -1,0 +1,25 @@
+Reference, Value, Footprint, Datasheet, Unit Price
+U1,ATMEGA328P-A,Custom_Library:TQFP-32,
+J3,BUTTONS,Custom_Library:Hirose_DF3A-7P-2DSA,https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3A-7P-2DS/H3898-ND/560464,0.43
+J4,MATRIX,Custom_Library:Hirose_DF3A-5P-2DSA,https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3A-5P-2DS/H3896-ND/560462,0.37
+X1,16 MHz,Custom_Library:XTAL_SIP-3,
+J2,PROGRAMMER,Custom_Library:Pin_Header_01x06_Staggered,
+D1,1N4001,Custom_Library:DIODE_Rectifier_1A,
+J1,BATTERY,Custom_Library:Hirose_DF3A-2P-2DSA,
+S1,RESET,Custom_Library:Pushbutton_6mm_4pin,
+U2,ATTINY85-S,Custom_Library:SOIC-8_Wide,https://www.digikey.ca/product-detail/en/microchip-technology/ATTINY85-20SU/ATTINY85-20SU-ND/735470,1.76
+LS1,8 Ohm,Custom_Library:Speaker_23mm,https://www.digikey.ca/product-detail/en/mallory-sonalert-products-inc/PSR-23F08S-JQ/458-1124-ND/2071440,1.46
+R2,1k,Custom_Library:0805,
+D2,LED,Custom_Library:0805_LED,
+C5,100uF,Custom_Library:C_Radial_D5_P2.5,
+R1,120,Custom_Library:R_0.25W,
+RV1,5k,Custom_Library:Trimpot_3362P,https://www.digikey.ca/product-detail/en/bourns-inc/3362P-1-502TLF/3362P-502TLF-ND/1232539,2.88
+H1,PLUG HOUSING,,https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3-7S-2C/H2088-ND/141494,0.26
+H2,PLUG HOUSING,,https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3-7S-2C/H2088-ND/141494,0.26
+C1,47uF,Custom_Library:C_Radial_D5_P2.5,
+C2,0.1uF,Custom_Library:C_Radial_Rect_P5,
+C3,0.1uF,Custom_Library:C_Radial_Rect_P5,
+H3,M3,Custom_Library:M3_Isolated,
+H4,M3,Custom_Library:M3_Isolated,
+H5,M3,Custom_Library:M3_Isolated,
+D3,5.6V,Custom_Library:DIODE_Rectifier_1A,

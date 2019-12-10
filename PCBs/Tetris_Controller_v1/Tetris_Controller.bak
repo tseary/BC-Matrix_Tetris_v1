@@ -1,0 +1,757 @@
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:Custom
+LIBS:Tetris_Controller-cache
+EELAYER 25 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L ATMEGA328P-A U1
+U 1 1 59FE2F10
+P 2600 3800
+F 0 "U1" H 1850 5050 40  0000 L BNN
+F 1 "ATMEGA328P-A" H 3200 2450 40  0000 C CNN
+F 2 "Custom_Library:TQFP-32" H 3150 2400 30  0000 C CIN
+F 3 "" H 2600 3800 60  0000 C CNN
+	1    2600 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR01
+U 1 1 59FE2F4C
+P 1600 2600
+F 0 "#PWR01" H 1600 2450 50  0001 C CNN
+F 1 "+5V" H 1600 2740 50  0000 C CNN
+F 2 "" H 1600 2600 60  0000 C CNN
+F 3 "" H 1600 2600 60  0000 C CNN
+	1    1600 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR02
+U 1 1 59FE2F85
+P 1600 5100
+F 0 "#PWR02" H 1600 4850 50  0001 C CNN
+F 1 "GND" H 1600 4950 50  0000 C CNN
+F 2 "" H 1600 5100 60  0000 C CNN
+F 3 "" H 1600 5100 60  0000 C CNN
+	1    1600 5100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1600 2600 1600 3300
+Wire Wire Line
+	1600 3300 1700 3300
+Wire Wire Line
+	1700 3000 1600 3000
+Connection ~ 1600 3000
+Wire Wire Line
+	1600 2800 1700 2800
+Connection ~ 1600 2800
+Wire Wire Line
+	1700 2700 1600 2700
+Connection ~ 1600 2700
+Wire Wire Line
+	1600 4800 1600 5100
+Wire Wire Line
+	1600 4800 1700 4800
+Wire Wire Line
+	1600 4900 1700 4900
+Connection ~ 1600 4900
+Wire Wire Line
+	1600 5000 1700 5000
+Connection ~ 1600 5000
+$Comp
+L CONN_01X07 J3
+U 1 1 59FE302C
+P 4300 6500
+F 0 "J3" H 4300 6900 50  0000 C CNN
+F 1 "BUTTONS" V 4400 6500 50  0000 C CNN
+F 2 "Custom_Library:Hirose_DF3A-7P-2DSA" V 4450 6500 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3A-7P-2DS/H3898-ND/560464" H 4300 6500 60  0001 C CNN
+F 4 "0.43" H 4300 6500 60  0001 C CNN "Unit Price"
+	1    4300 6500
+	0    -1   1    0   
+$EndComp
+$Comp
+L CONN_01X05 J4
+U 1 1 59FE3086
+P 5400 6500
+F 0 "J4" H 5400 6800 50  0000 C CNN
+F 1 "MATRIX" V 5500 6500 50  0000 C CNN
+F 2 "Custom_Library:Hirose_DF3A-5P-2DSA" V 5550 6500 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3A-5P-2DS/H3896-ND/560462" H 5400 6500 60  0001 C CNN
+F 4 "0.37" H 5400 6500 60  0001 C CNN "Unit Price"
+	1    5400 6500
+	0    -1   1    0   
+$EndComp
+$Comp
+L GND #PWR03
+U 1 1 59FE30DC
+P 4000 6300
+F 0 "#PWR03" H 4000 6050 50  0001 C CNN
+F 1 "GND" V 4000 6100 50  0000 C CNN
+F 2 "" H 4000 6300 60  0000 C CNN
+F 3 "" H 4000 6300 60  0000 C CNN
+	1    4000 6300
+	-1   0    0    1   
+$EndComp
+$Comp
+L GND #PWR04
+U 1 1 59FE310A
+P 5200 6300
+F 0 "#PWR04" H 5200 6050 50  0001 C CNN
+F 1 "GND" V 5200 6100 50  0000 C CNN
+F 2 "" H 5200 6300 60  0000 C CNN
+F 3 "" H 5200 6300 60  0000 C CNN
+	1    5200 6300
+	-1   0    0    1   
+$EndComp
+Text GLabel 4600 6300 1    50   Output ~ 0
+LEFT
+Text GLabel 4500 6300 1    50   Output ~ 0
+RIGHT
+Text GLabel 4400 6300 1    50   Output ~ 0
+DOWN
+Text GLabel 4300 6300 1    50   Output ~ 0
+ENC_A
+Text GLabel 4200 6300 1    50   Output ~ 0
+ENC_B
+Text GLabel 4100 6300 1    50   Output ~ 0
+ENTER
+Text GLabel 3700 2700 2    50   Input ~ 0
+LEFT
+Text GLabel 3700 5000 2    50   Input ~ 0
+RIGHT
+Text GLabel 3700 4900 2    50   Input ~ 0
+DOWN
+Text GLabel 3700 4500 2    50   Input ~ 0
+ENC_A
+Text GLabel 3700 4600 2    50   Input ~ 0
+ENC_B
+Text GLabel 3700 4700 2    50   Input ~ 0
+ENTER
+$Comp
+L Ceramic_Resonator X1
+U 1 1 59FE3A18
+P 5900 3550
+F 0 "X1" H 6125 3650 60  0000 C CNN
+F 1 "16 MHz" H 5900 3850 60  0000 C CNN
+F 2 "Custom_Library:XTAL_SIP-3" H 5900 3800 30  0000 C CNN
+F 3 "" H 5900 3600 60  0000 C CNN
+	1    5900 3550
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X06 J2
+U 1 1 59FE3BD7
+P 3150 6500
+F 0 "J2" H 3150 6850 50  0000 C CNN
+F 1 "PROGRAMMER" V 3250 6500 50  0000 C CNN
+F 2 "Custom_Library:Pin_Header_01x06_Staggered" V 3300 6500 30  0000 C CNN
+F 3 "" H 3150 6500 60  0000 C CNN
+	1    3150 6500
+	0    -1   1    0   
+$EndComp
+$Comp
+L GND #PWR05
+U 1 1 59FE3C23
+P 2900 6300
+F 0 "#PWR05" H 2900 6050 50  0001 C CNN
+F 1 "GND" V 2900 6100 50  0000 C CNN
+F 2 "" H 2900 6300 60  0000 C CNN
+F 3 "" H 2900 6300 60  0000 C CNN
+	1    2900 6300
+	-1   0    0    1   
+$EndComp
+$Comp
+L +5VP #PWR06
+U 1 1 59FE4C76
+P 3100 6300
+F 0 "#PWR06" H 3100 6150 50  0001 C CNN
+F 1 "+5VP" V 3100 6500 50  0000 C CNN
+F 2 "" H 3100 6300 60  0000 C CNN
+F 3 "" H 3100 6300 60  0000 C CNN
+	1    3100 6300
+	1    0    0    -1  
+$EndComp
+NoConn ~ 3000 6300
+NoConn ~ 3400 6300
+Text GLabel 3300 6300 1    50   Input ~ 0
+TX
+Text GLabel 3200 6300 1    50   Output ~ 0
+RX
+Text GLabel 3700 4400 2    50   Output ~ 0
+TX
+Text GLabel 3700 4300 2    50   Input ~ 0
+RX
+Text GLabel 5500 6300 1    50   BiDi ~ 0
+SDA
+Text GLabel 5600 6300 1    50   Input ~ 0
+SCL
+Text GLabel 5400 6300 1    50   Input ~ 0
+MATRIX_~RESET
+$Comp
+L +5V #PWR07
+U 1 1 59FE4FC6
+P 5300 6300
+F 0 "#PWR07" H 5300 6150 50  0001 C CNN
+F 1 "+5V" V 5300 6500 50  0000 C CNN
+F 2 "" H 5300 6300 60  0000 C CNN
+F 3 "" H 5300 6300 60  0000 C CNN
+	1    5300 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L D D1
+U 1 1 59FE5050
+P 2650 1250
+F 0 "D1" H 2650 1350 50  0000 C CNN
+F 1 "1N4001" H 2650 1150 50  0000 C CNN
+F 2 "Custom_Library:DIODE_Rectifier_1A" H 2650 1300 30  0000 C CNN
+F 3 "" H 2650 1250 60  0000 C CNN
+	1    2650 1250
+	-1   0    0    1   
+$EndComp
+$Comp
+L +5VP #PWR08
+U 1 1 59FE51D1
+P 2400 1250
+F 0 "#PWR08" H 2400 1100 50  0001 C CNN
+F 1 "+5VP" V 2400 1450 50  0000 C CNN
+F 2 "" H 2400 1250 60  0000 C CNN
+F 3 "" H 2400 1250 60  0000 C CNN
+	1    2400 1250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	2400 1250 2500 1250
+$Comp
+L +5V #PWR09
+U 1 1 59FE5230
+P 3900 1500
+F 0 "#PWR09" H 3900 1350 50  0001 C CNN
+F 1 "+5V" V 3900 1700 50  0000 C CNN
+F 2 "" H 3900 1500 60  0000 C CNN
+F 3 "" H 3900 1500 60  0000 C CNN
+	1    3900 1500
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2500 1500 3900 1500
+Wire Wire Line
+	2900 1250 2900 1550
+Wire Wire Line
+	2900 1250 2800 1250
+Connection ~ 2900 1500
+$Comp
+L CONN_01X02 J1
+U 1 1 59FE53C0
+P 2300 1550
+F 0 "J1" H 2300 1700 50  0000 C CNN
+F 1 "BATTERY" V 2400 1550 50  0000 C CNN
+F 2 "Custom_Library:Hirose_DF3A-2P-2DSA" V 2450 1550 30  0000 C CNN
+F 3 "" H 2300 1550 60  0000 C CNN
+	1    2300 1550
+	-1   0    0    1   
+$EndComp
+$Comp
+L GND #PWR010
+U 1 1 59FE546F
+P 2500 1600
+F 0 "#PWR010" H 2500 1350 50  0001 C CNN
+F 1 "GND" V 2500 1400 50  0000 C CNN
+F 2 "" H 2500 1600 60  0000 C CNN
+F 3 "" H 2500 1600 60  0000 C CNN
+	1    2500 1600
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3700 2700 3600 2700
+Wire Wire Line
+	3700 4900 3600 4900
+Wire Wire Line
+	3600 5000 3700 5000
+Wire Wire Line
+	3700 4400 3600 4400
+Wire Wire Line
+	3600 4300 3700 4300
+Wire Wire Line
+	3700 3000 3600 3000
+Wire Wire Line
+	3600 2900 3700 2900
+Wire Wire Line
+	3700 3100 3600 3100
+Text GLabel 3700 3300 2    50   UnSpc ~ 0
+XTAL1
+Text GLabel 3700 3400 2    50   UnSpc ~ 0
+XTAL2
+Wire Wire Line
+	3700 3400 3600 3400
+Wire Wire Line
+	3600 3300 3700 3300
+Text GLabel 5800 3700 3    50   UnSpc ~ 0
+XTAL1
+Text GLabel 6000 3700 3    50   UnSpc ~ 0
+XTAL2
+$Comp
+L GND #PWR011
+U 1 1 59FE5EBE
+P 5900 3700
+F 0 "#PWR011" H 5900 3450 50  0001 C CNN
+F 1 "GND" V 5900 3500 50  0000 C CNN
+F 2 "" H 5900 3700 60  0000 C CNN
+F 3 "" H 5900 3700 60  0000 C CNN
+	1    5900 3700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5900 3700 5900 3600
+Wire Wire Line
+	5800 3600 5800 3700
+Wire Wire Line
+	6000 3700 6000 3600
+Text GLabel 4200 3200 2    50   Output ~ 0
+SCK
+Text GLabel 3700 3000 2    50   Output ~ 0
+MOSI
+Text GLabel 3700 3100 2    50   Input ~ 0
+MISO
+Text GLabel 3700 2900 2    50   Output ~ 0
+ATTINY_~RESET
+$Comp
+L SW_PUSH S1
+U 1 1 59FE6306
+P 4600 4150
+F 0 "S1" H 4750 4260 50  0000 C CNN
+F 1 "RESET" H 4600 4050 50  0000 C CNN
+F 2 "Custom_Library:Pushbutton_6mm_4pin" H 4600 4100 30  0000 C CNN
+F 3 "" H 4600 4150 60  0000 C CNN
+	1    4600 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4300 4150 3600 4150
+Text Label 4000 4150 0    50   ~ 0
+~RESET
+$Comp
+L GND #PWR012
+U 1 1 59FE648E
+P 5000 4150
+F 0 "#PWR012" H 5000 3900 50  0001 C CNN
+F 1 "GND" V 5000 3950 50  0000 C CNN
+F 2 "" H 5000 4150 60  0000 C CNN
+F 3 "" H 5000 4150 60  0000 C CNN
+	1    5000 4150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5000 4150 4900 4150
+Wire Wire Line
+	3600 3200 4200 3200
+Text GLabel 7500 2900 0    50   Input ~ 0
+SCK
+Text GLabel 3700 3950 2    50   BiDi ~ 0
+SDA
+Text GLabel 3700 4050 2    50   Output ~ 0
+SCL
+Wire Wire Line
+	3700 3950 3600 3950
+Wire Wire Line
+	3600 4050 3700 4050
+NoConn ~ 3600 3550
+NoConn ~ 3600 3650
+NoConn ~ 3600 3750
+NoConn ~ 3600 3850
+Wire Wire Line
+	3700 4600 3600 4600
+Wire Wire Line
+	3600 4500 3700 4500
+Wire Wire Line
+	3700 4700 3600 4700
+Text GLabel 7500 2700 0    50   Input ~ 0
+MOSI
+Text GLabel 7500 2800 0    50   Output ~ 0
+MISO
+Text GLabel 7500 3200 0    50   Input ~ 0
+ATTINY_~RESET
+$Comp
+L ATTINY85-S U2
+U 1 1 59FE737A
+P 8950 2950
+F 0 "U2" H 7800 3350 40  0000 C CNN
+F 1 "ATTINY85-S" H 9950 2550 40  0000 C CNN
+F 2 "Custom_Library:SOIC-8_Wide" H 9800 2500 30  0000 C CIN
+F 3 "https://www.digikey.ca/product-detail/en/microchip-technology/ATTINY85-20SU/ATTINY85-20SU-ND/735470" H 8950 2950 60  0001 C CNN
+F 4 "1.76" H 8950 2950 60  0001 C CNN "Unit Price"
+	1    8950 2950
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7500 2900 7600 2900
+Wire Wire Line
+	7600 2800 7500 2800
+Wire Wire Line
+	7500 2700 7600 2700
+Wire Wire Line
+	7600 3200 7500 3200
+Text GLabel 7500 3100 0    50   Output ~ 0
+AUDIO
+Wire Wire Line
+	7500 3100 7600 3100
+NoConn ~ 7600 3000
+$Comp
+L SPEAKER LS1
+U 1 1 59FE8762
+P 9700 4300
+F 0 "LS1" H 9700 4500 50  0000 C CNN
+F 1 "8 Ohm" H 9700 4100 50  0000 C CNN
+F 2 "Custom_Library:Speaker_23mm" H 9700 4550 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/mallory-sonalert-products-inc/PSR-23F08S-JQ/458-1124-ND/2071440" H 9700 4300 60  0001 C CNN
+F 4 "1.46" H 9700 4300 60  0001 C CNN "Unit Price"
+	1    9700 4300
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR013
+U 1 1 59FE8824
+P 9300 4500
+F 0 "#PWR013" H 9300 4250 50  0001 C CNN
+F 1 "GND" H 9300 4350 50  0000 C CNN
+F 2 "" H 9300 4500 60  0000 C CNN
+F 3 "" H 9300 4500 60  0000 C CNN
+	1    9300 4500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9300 4500 9300 4400
+Wire Wire Line
+	9300 4400 9400 4400
+$Comp
+L R R2
+U 1 1 59FE8B5B
+P 4350 3400
+F 0 "R2" V 4430 3400 50  0000 C CNN
+F 1 "1k" V 4350 3400 50  0000 C CNN
+F 2 "Custom_Library:0805" V 4280 3400 30  0000 C CNN
+F 3 "" H 4350 3400 30  0000 C CNN
+	1    4350 3400
+	0    1    1    0   
+$EndComp
+$Comp
+L LED D2
+U 1 1 59FE8BCE
+P 4800 3400
+F 0 "D2" H 4800 3500 50  0000 C CNN
+F 1 "LED" H 4800 3300 50  0000 C CNN
+F 2 "Custom_Library:0805_LED" H 4800 3450 30  0000 C CNN
+F 3 "" H 4800 3400 60  0000 C CNN
+	1    4800 3400
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4100 3200 4100 3400
+Wire Wire Line
+	4100 3400 4200 3400
+Connection ~ 4100 3200
+Wire Wire Line
+	4500 3400 4600 3400
+$Comp
+L GND #PWR014
+U 1 1 59FE8E32
+P 5100 3400
+F 0 "#PWR014" H 5100 3150 50  0001 C CNN
+F 1 "GND" V 5100 3200 50  0000 C CNN
+F 2 "" H 5100 3400 60  0000 C CNN
+F 3 "" H 5100 3400 60  0000 C CNN
+	1    5100 3400
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5000 3400 5100 3400
+NoConn ~ 1700 4050
+NoConn ~ 1700 4150
+NoConn ~ 3600 4800
+$Comp
+L GND #PWR015
+U 1 1 59FEA59D
+P 10300 3200
+F 0 "#PWR015" H 10300 2950 50  0001 C CNN
+F 1 "GND" V 10300 3000 50  0000 C CNN
+F 2 "" H 10300 3200 60  0000 C CNN
+F 3 "" H 10300 3200 60  0000 C CNN
+	1    10300 3200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L +5V #PWR016
+U 1 1 59FEA5C9
+P 10300 2700
+F 0 "#PWR016" H 10300 2550 50  0001 C CNN
+F 1 "+5V" V 10300 2900 50  0000 C CNN
+F 2 "" H 10300 2700 60  0000 C CNN
+F 3 "" H 10300 2700 60  0000 C CNN
+	1    10300 2700
+	0    1    1    0   
+$EndComp
+$Comp
+L CP1 C5
+U 1 1 59FEA8D6
+P 9150 4200
+F 0 "C5" H 9175 4300 50  0000 L CNN
+F 1 "100uF" H 9175 4100 50  0000 L CNN
+F 2 "Custom_Library:C_Radial_D5_P2.5" V 9050 4200 30  0000 C CNN
+F 3 "" H 9150 4200 60  0000 C CNN
+	1    9150 4200
+	0    -1   -1   0   
+$EndComp
+$Comp
+L R R1
+U 1 1 59FEA91F
+P 8050 4200
+F 0 "R1" V 8130 4200 50  0000 C CNN
+F 1 "120" V 8050 4200 50  0000 C CNN
+F 2 "Custom_Library:R_0.25W" V 7980 4200 30  0000 C CNN
+F 3 "" H 8050 4200 30  0000 C CNN
+	1    8050 4200
+	0    1    1    0   
+$EndComp
+$Comp
+L POT RV1
+U 1 1 59FEA95C
+P 8550 4200
+F 0 "RV1" H 8550 4100 50  0000 C CNN
+F 1 "5k" H 8550 4200 50  0000 C CNN
+F 2 "Custom_Library:Trimpot_3362P" H 8550 4050 30  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/bourns-inc/3362P-1-502TLF/3362P-502TLF-ND/1232539" H 8550 4200 60  0001 C CNN
+F 4 "2.88" H 8550 4200 60  0001 C CNN "Unit Price"
+	1    8550 4200
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	8800 4200 9000 4200
+$Comp
+L HARDWARE H1
+U 1 1 59FEBF82
+P 4050 6800
+F 0 "H1" H 3900 6800 50  0000 R CNN
+F 1 "PLUG HOUSING" H 4200 6800 50  0000 L CNN
+F 2 "" H 4050 6800 60  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3-7S-2C/H2088-ND/141494" H 4050 6800 60  0001 C CNN
+F 4 "0.26" H 4050 6800 60  0001 C CNN "Unit Price"
+	1    4050 6800
+	1    0    0    -1  
+$EndComp
+$Comp
+L HARDWARE H2
+U 1 1 59FEC114
+P 5250 6800
+F 0 "H2" H 5100 6800 50  0000 R CNN
+F 1 "PLUG HOUSING" H 5400 6800 50  0000 L CNN
+F 2 "" H 5250 6800 60  0000 C CNN
+F 3 "https://www.digikey.ca/product-detail/en/hirose-electric-co-ltd/DF3-7S-2C/H2088-ND/141494" H 5250 6800 60  0001 C CNN
+F 4 "0.26" H 5250 6800 60  0001 C CNN "Unit Price"
+	1    5250 6800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8900 4200 8900 4000
+Wire Wire Line
+	8900 4000 8550 4000
+Wire Wire Line
+	8550 4000 8550 4050
+Connection ~ 8900 4200
+Wire Wire Line
+	7800 4200 7900 4200
+Wire Wire Line
+	9300 4200 9400 4200
+$Comp
+L CP1 C1
+U 1 1 59FEEC0E
+P 3200 1750
+F 0 "C1" H 3225 1850 50  0000 L CNN
+F 1 "47uF" H 3225 1650 50  0000 L CNN
+F 2 "Custom_Library:C_Radial_D5_P2.5" V 3100 1750 30  0000 C CNN
+F 3 "" H 3200 1750 60  0000 C CNN
+	1    3200 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L GND #PWR017
+U 1 1 59FEEDBD
+P 3200 2000
+F 0 "#PWR017" H 3200 1750 50  0001 C CNN
+F 1 "GND" H 3200 1850 50  0000 C CNN
+F 2 "" H 3200 2000 60  0000 C CNN
+F 3 "" H 3200 2000 60  0000 C CNN
+	1    3200 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L C C2
+U 1 1 59FEEF82
+P 3500 1750
+F 0 "C2" H 3525 1850 50  0000 L CNN
+F 1 "0.1uF" H 3525 1650 50  0000 L CNN
+F 2 "Custom_Library:C_Radial_Rect_P5" V 3400 1750 30  0000 C CNN
+F 3 "" H 3500 1750 60  0000 C CNN
+	1    3500 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 1600 3500 1500
+Connection ~ 3500 1500
+Wire Wire Line
+	3200 1600 3200 1500
+Connection ~ 3200 1500
+Wire Wire Line
+	3200 2000 3200 1900
+$Comp
+L GND #PWR018
+U 1 1 59FEF1B5
+P 3500 2000
+F 0 "#PWR018" H 3500 1750 50  0001 C CNN
+F 1 "GND" H 3500 1850 50  0000 C CNN
+F 2 "" H 3500 2000 60  0000 C CNN
+F 3 "" H 3500 2000 60  0000 C CNN
+	1    3500 2000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 2000 3500 1900
+$Comp
+L GND #PWR019
+U 1 1 59FEF257
+P 3800 2000
+F 0 "#PWR019" H 3800 1750 50  0001 C CNN
+F 1 "GND" H 3800 1850 50  0000 C CNN
+F 2 "" H 3800 2000 60  0000 C CNN
+F 3 "" H 3800 2000 60  0000 C CNN
+	1    3800 2000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3800 2000 3800 1900
+Text Notes 3950 7500 0    60   ~ 0
+ENTER = blue\nENC_B = yellow\nENC_A = red\nDOWN = green\nRIGHT = gray\nLEFT = brown
+Text GLabel 7800 4200 0    50   Input ~ 0
+AUDIO
+NoConn ~ 3600 2800
+$Comp
+L C C3
+U 1 1 59FF2A4C
+P 3800 1750
+F 0 "C3" H 3825 1850 50  0000 L CNN
+F 1 "0.1uF" H 3825 1650 50  0000 L CNN
+F 2 "Custom_Library:C_Radial_Rect_P5" V 3700 1750 30  0000 C CNN
+F 3 "" H 3800 1750 60  0000 C CNN
+	1    3800 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 H3
+U 1 1 59FF3F83
+P 6900 5400
+F 0 "H3" H 6900 5500 50  0000 C CNN
+F 1 "M3" V 7000 5400 50  0000 C CNN
+F 2 "Custom_Library:M3_Isolated" H 6900 5300 30  0000 C CNN
+F 3 "" H 6900 5400 60  0000 C CNN
+	1    6900 5400
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 6900 5600
+$Comp
+L CONN_01X01 H4
+U 1 1 59FF4517
+P 7200 5400
+F 0 "H4" H 7200 5500 50  0000 C CNN
+F 1 "M3" V 7300 5400 50  0000 C CNN
+F 2 "Custom_Library:M3_Isolated" H 7200 5300 30  0000 C CNN
+F 3 "" H 7200 5400 60  0000 C CNN
+	1    7200 5400
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 7200 5600
+$Comp
+L CONN_01X01 H5
+U 1 1 59FF457E
+P 7500 5400
+F 0 "H5" H 7500 5500 50  0000 C CNN
+F 1 "M3" V 7600 5400 50  0000 C CNN
+F 2 "Custom_Library:M3_Isolated" H 7500 5300 30  0000 C CNN
+F 3 "" H 7500 5400 60  0000 C CNN
+	1    7500 5400
+	0    -1   -1   0   
+$EndComp
+NoConn ~ 7500 5600
+Wire Wire Line
+	3800 1600 3800 1500
+Connection ~ 3800 1500
+$Comp
+L ZENER D3
+U 1 1 59FF1FB3
+P 2900 1750
+F 0 "D3" H 2900 1850 50  0000 C CNN
+F 1 "5.6V" H 2900 1650 50  0000 C CNN
+F 2 "Custom_Library:DIODE_Rectifier_1A" H 2900 1700 30  0000 C CNN
+F 3 "" H 2900 1750 60  0000 C CNN
+	1    2900 1750
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR020
+U 1 1 59FF203A
+P 2900 2000
+F 0 "#PWR020" H 2900 1750 50  0001 C CNN
+F 1 "GND" H 2900 1850 50  0000 C CNN
+F 2 "" H 2900 2000 60  0000 C CNN
+F 3 "" H 2900 2000 60  0000 C CNN
+	1    2900 2000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 2000 2900 1950
+Wire Wire Line
+	8200 4200 8300 4200
+Text Notes 5050 1750 0    118  ~ 0
+TODO\n- add ICSP port\n- remove matrix reset pin\n- increase speaker impedance\n- use +/- speaker pins
+$EndSCHEMATC
