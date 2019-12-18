@@ -67,9 +67,15 @@ uint16_t fallPeriod = 1000;
 const uint16_t MINIMUM_FALL_PERIOD = 10;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
-uint16_t highScore = 0;
-char highScoreInitials[] = {'A', 'A', 'A', '\0'};  // Three letters and NULL
+
+const uint8_t HIGH_SCORE_COUNT = 3;
 const uint8_t INITIALS_COUNT = 3;
+uint16_t highScores[] = {0, 0, 0};	// The 1st place high score is always stored at index 0.
+char highScoreInitials[HIGH_SCORE_COUNT][INITIALS_COUNT + 1] = {
+	{'A', 'A', 'A', '\0'},
+	{'A', 'A', 'A', '\0'},
+	{'A', 'A', 'A', '\0'}};  // Three letters and NULL (NULL is used for printing as string)
+
 const uint16_t DISPLAY_MILLIS = 3000; // The amount of time to show scores, names, etc.
 
 // Music commands - top four bits = counter, bottom four bits = opcode
@@ -89,11 +95,10 @@ const uint8_t
 EEPROM_RANDOM_SEED = 0,		// uint32_t
 EEPROM_HIGH_SCORE = 4,		// uint16_t
 EEPROM_HIGH_SCORE_INITIALS = 6,  // 3 chars
-EEPROM_LED_CURRENT = 10,	// uint8_t
-EEPROM_PIXEL_BRIGHTNESS = 11;		// uint32_t
-
-// TODO
-// - add low-power functionality
+EEPROM_LED_CURRENT = 110,	// uint8_t
+EEPROM_PIXEL_BRIGHTNESS = 111;		// uint32_t
+const uint8_t
+HIGH_SCORE_SIZE = 5;	// bytes needed to hold one score and initials
 
 void setup() {
 #ifdef DEBUG_SERIAL
@@ -137,15 +142,8 @@ void setup() {
 
 	// Load the high score data and perform sanity check
 	if (!resetHighScore) {
-		EEPROM.get(EEPROM_HIGH_SCORE, highScore);
-#ifdef DEBUG_SERIAL
-		Serial.print("highScore = ");
-		Serial.println(highScore);
-#endif
-		for (uint8_t i = 0; i < INITIALS_COUNT; i++) {
-			highScoreInitials[i] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i);
-			resetHighScore |= !(highScoreInitials[i] >= 'A' && highScoreInitials[i] <= 'Z');
-		}
+		bool dataValid = loadHighScoreData();
+		resetHighScore |= !dataValid;
 	}
 
 	// Reset the high score if necessary
@@ -369,14 +367,24 @@ void gameOver() {
 		delay(CURTAIN_MILLIS);
 	}
 
-	// Compare the score to the high score
-	// TODO Forbid skipping score display if true
-	bool newHighScore = score > highScore;  // True if the high score was just beaten
-	if (newHighScore) {
-		highScore = score;
+	// Compare the score to the high scores
+	uint8_t newHighScoreIndex = 255;
+	bool newHighScore = false;
+	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
+		if (score > highScores[i]) {
+			newHighScoreIndex = i;
+			newHighScore = true;
+
+			shiftHighScores(newHighScoreIndex);
+			highScores[newHighScoreIndex] = score;
+
+			break;
+		}
 	}
 
-	// Display score
+	// TODO Forbid skipping score display if true
+
+	// Display score (behind curtain)
 	clearBoard();
 	drawUInt16(score);
 
@@ -415,8 +423,8 @@ void gameOver() {
 		delay(1000);
 
 		// Enter initials
-		for (uint8_t i = 0; i < INITIALS_COUNT; i++) {
-			highScoreInitials[i] = 'A';  // Clear the old initials
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			highScoreInitials[newHighScoreIndex][a] = 'A';  // Clear the old initials
 		}
 		char hiddenLetter;
 		uint8_t letterIndex = 0;
@@ -432,11 +440,11 @@ void gameOver() {
 			long encoderChange = getEncoderChange();
 			if (encoderChange != 0) {
 				// Change letter and wrap around
-				highScoreInitials[letterIndex] += encoderChange;
-				if (highScoreInitials[letterIndex] < 'A') {
-					highScoreInitials[letterIndex] += 26;
-				} else if (highScoreInitials[letterIndex] > 'Z') {
-					highScoreInitials[letterIndex] -= 26;
+				highScoreInitials[newHighScoreIndex][letterIndex] += encoderChange;
+				if (highScoreInitials[newHighScoreIndex][letterIndex] < 'A') {
+					highScoreInitials[newHighScoreIndex][letterIndex] += 26;
+				} else if (highScoreInitials[newHighScoreIndex][letterIndex] > 'Z') {
+					highScoreInitials[newHighScoreIndex][letterIndex] -= 26;
 				}
 
 				// Reset flashing
@@ -467,44 +475,41 @@ void gameOver() {
 			if (redraw) {
 				// Hide the selected letter while it is flashed off
 				if (!flashOn && letterIndex < INITIALS_COUNT) {
-					hiddenLetter = highScoreInitials[letterIndex];
-					highScoreInitials[letterIndex] = ' ';
+					hiddenLetter = highScoreInitials[newHighScoreIndex][letterIndex];
+					highScoreInitials[newHighScoreIndex][letterIndex] = ' ';
 				}
 
 				// Draw initials
 				clearBoard();
-				drawText5High(highScoreInitials);
+				drawText5High(highScoreInitials[newHighScoreIndex]);
 				drawBoard(false);
 
 				// Unhide the selected letter
 				if (!flashOn && letterIndex < INITIALS_COUNT) {
-					highScoreInitials[letterIndex] = hiddenLetter;
+					highScoreInitials[newHighScoreIndex][letterIndex] = hiddenLetter;
 				}
 			}
 		} while (letterIndex < INITIALS_COUNT);
 
 		// Save the high score data immediately
 		saveHighScoreData();
-#ifdef DEBUG_SERIAL
-		Serial.print("High score initials: ");
-		Serial.println(highScoreInitials);
-		Serial.print("High score: ");
-		Serial.println(highScore);
-#endif
 
 		// Show completed initials
 		delay(1000);
 
 		// Show score again
-		clearBoard();
+		/*clearBoard();
 		drawUInt16(score);
 		drawBoard(false);
-		delay(DISPLAY_MILLIS);
+		delay(DISPLAY_MILLIS);*/
 
-	} else {
+	}
+
+	// Show all high scores until interrupted by user
+	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
 		// Show high score initials
 		clearBoard();
-		drawText5High(highScoreInitials);
+		drawText5High(highScoreInitials[i]);
 		drawBoard(false);
 		if (breakableDelay(1000)) {
 			return;
@@ -512,7 +517,7 @@ void gameOver() {
 
 		// Show high score
 		clearBoard();
-		drawUInt16(highScore);
+		drawUInt16(highScores[i]);
 		drawBoard(false);
 		if (breakableDelay(1000)) {
 			return;
@@ -566,19 +571,79 @@ uint16_t getFallPeriod(uint16_t level) {
 		round(1000 * pow(0.774264, level - 1)));  // 10x speed in level 10
 }
 
+// Moves all high scores down one slot, starting at the given index.
+void shiftHighScores(uint8_t startIndex) {
+#ifdef DEBUG_SERIAL
+	Serial.print("Shift High Scores from index ");
+	Serial.println(startIndex);
+#endif
+
+	for (int toIndex = HIGH_SCORE_COUNT - 1; toIndex > startIndex; toIndex--) {
+		highScores[toIndex] = highScores[toIndex - 1];
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			highScoreInitials[toIndex][a] = highScoreInitials[toIndex - 1][a];
+		}
+	}
+}
+
 // Clears the high score and initials from EEPROM
 void resetHighScoreData() {
-	highScore = 0;
-	for (uint8_t i = 0; i < INITIALS_COUNT; i++) {
-		highScoreInitials[i] = 'A';
+#ifdef DEBUG_SERIAL
+	Serial.println("Reset High Scores");
+#endif
+
+	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
+		highScores[i] = 0;
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			highScoreInitials[i][a] = 'A';
+		}
 	}
 	saveHighScoreData();
 }
 
+// Returns true if the loaded data passes sanity check
+bool loadHighScoreData() {
+#ifdef DEBUG_SERIAL
+	Serial.println("Load High Scores");
+#endif
+
+	bool dataValid = true;
+
+	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
+		EEPROM.get(EEPROM_HIGH_SCORE + i * HIGH_SCORE_SIZE, highScores[i]);
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			highScoreInitials[i][a] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i * HIGH_SCORE_SIZE + a);
+			dataValid &= highScoreInitials[i][a] >= 'A' && highScoreInitials[i][a] <= 'Z';
+		}
+
+#ifdef DEBUG_SERIAL
+		Serial.print("High score initials: ");
+		Serial.println(highScoreInitials[i]);
+		Serial.print("High score: ");
+		Serial.println(highScores[i]);
+#endif
+	}
+
+	return dataValid;
+}
+
 void saveHighScoreData() {
-	EEPROM.put(EEPROM_HIGH_SCORE, highScore);
-	for (uint8_t i = 0; i < INITIALS_COUNT; i++) {
-		EEPROM.write(EEPROM_HIGH_SCORE_INITIALS + i, highScoreInitials[i]);
+#ifdef DEBUG_SERIAL
+	Serial.println("Save High Scores");
+#endif
+
+	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
+		EEPROM.put(EEPROM_HIGH_SCORE + i * HIGH_SCORE_SIZE, highScores[i]);
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			EEPROM.write(EEPROM_HIGH_SCORE_INITIALS + i * HIGH_SCORE_SIZE + a, highScoreInitials[i][a]);
+		}
+
+#ifdef DEBUG_SERIAL
+		Serial.print("High score initials: ");
+		Serial.println(highScoreInitials[i]);
+		Serial.print("High score: ");
+		Serial.println(highScores[i]);
+#endif
 	}
 }
 
@@ -687,7 +752,7 @@ bool isTetraminoCollision() {
 bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
 	const uint16_t tetraminoShape = TETRAMINO_SHAPES[type][r];
 	for (uint8_t i = 0; i < TETRAMINO_SIZE; i++) {
-		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i)) & TETRAMINO_MASK) << x;
+		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i))& TETRAMINO_MASK) << x;
 		uint16_t fieldLine = field[y + i];
 		collisionLine = tetraminoLine & fieldLine;
 
@@ -703,7 +768,7 @@ bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
 void assimilateTetramino() {
 	const uint16_t tetraminoShape = TETRAMINO_SHAPES[tetraminoType][tetraminoR];
 	for (uint8_t i = 0; i < TETRAMINO_SIZE; i++) {
-		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i)) & TETRAMINO_MASK) << tetraminoX;
+		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i))& TETRAMINO_MASK) << tetraminoX;
 		field[tetraminoY + i] |= tetraminoLine;
 	}
 }
@@ -714,30 +779,27 @@ void assimilateTetramino() {
 
  // 3-wide digits 0 to 9
 const uint32_t BOARD_DIGITS[5] = {
-  0b00110010100010110001110111111010,
-  0b00001101100101001001001100010101,
-  0b00011010010110110111110010010101,
-  0b00101101001100100101001001110101,
-  0b00010010111011111101110110010010
-};
+	0b00110010100010110001110111111010,
+	0b00001101100101001001001100010101,
+	0b00011010010110110111110010010101,
+	0b00101101001100100101001001110101,
+	0b00010010111011111101110110010010};
 
 // 5-wide digits 0 to 5
 const uint32_t BOARD_DIGITS_05[5] = {
-  0b00111100000111110111111111101110,
-  0b00000010000100001100000010010001,
-  0b00111101111100110011100010010001,
-  0b00100001000100001000011110010001,
-  0b00111111000111111111100010001110
-};
+	0b00111100000111110111111111101110,
+	0b00000010000100001100000010010001,
+	0b00111101111100110011100010010001,
+	0b00100001000100001000011110010001,
+	0b00111111000111111111100010001110};
 
 // 5-wide digits 6 to 9
 const uint32_t BOARD_DIGITS_69[5] = {
-  0b00000000000011110011100010001110,
-  0b00000000000000001100010010010001,
-  0b00000000000001111011100001011110,
-  0b00000000000010001100010000110000,
-  0b00000000000001110011101111101111
-};
+	0b00000000000011110011100010001110,
+	0b00000000000000001100010010010001,
+	0b00000000000001111011100001011110,
+	0b00000000000010001100010000110000,
+	0b00000000000001110011101111101111};
 
 void setDisplayText(String str) {
 	for (uint8_t i = 0; i < str.length(); i++) {
