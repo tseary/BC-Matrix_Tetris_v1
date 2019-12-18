@@ -92,11 +92,11 @@ COMMAND_GAME_OVER = 0x0d;
 
 // EEPROM addresses
 const uint8_t
-EEPROM_RANDOM_SEED = 0,		// uint32_t
-EEPROM_HIGH_SCORE = 4,		// uint16_t
-EEPROM_HIGH_SCORE_INITIALS = 6,  // 3 chars
-EEPROM_LED_CURRENT = 110,	// uint8_t
-EEPROM_PIXEL_BRIGHTNESS = 111;		// uint32_t
+EEPROM_RANDOM_SEED = 0,				// uint32_t
+EEPROM_HIGH_SCORE = 100,			// uint16_t * 3
+EEPROM_HIGH_SCORE_INITIALS = 102,	// 3 chars * 3
+EEPROM_LED_CURRENT = 10,				// uint8_t
+EEPROM_PIXEL_BRIGHTNESS = 11;		// uint32_t
 const uint8_t
 HIGH_SCORE_SIZE = 5;	// bytes needed to hold one score and initials
 
