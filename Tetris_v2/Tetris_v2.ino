@@ -119,21 +119,32 @@ void setup() {
 	initializeMusic();
 
 	// Power-on settings
-	// TODO Change resetHighScore to factoryReset
 	updateControl();
 	bool soundOn = !isDPress();
 	bool adjustBrightnessNow = isRPress();
-	bool resetHighScore = isLPress() && isDPress() && !isRPress();
-	if (resetHighScore) {
+	bool seriousBusiness = isLPress() && isDPress();
+	if (seriousBusiness) {
 		delay(1000);
-		resetHighScore &= isLPress() && isDPress() && !isRPress();
-		delay(1000);
-		resetHighScore &= isLPress() && isDPress() && !isRPress();
+		updateControl();
+		seriousBusiness &= isLPress() && isDPress();
 	}
+	if (seriousBusiness) {
+		delay(1000);
+		updateControl();
+		seriousBusiness &= isLPress() && isDPress();
+	}
+	bool highScoreReset = seriousBusiness && !isRPress();
+	bool doFactoryReset = seriousBusiness && isRPress();
 
 	// Enable/disable the sound
 	delay(75);  // Short delay before sending first music command
 	sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
+
+	// Factory reset if necessary
+	if (doFactoryReset) {
+		factoryReset();
+		return;
+	}
 
 	// Adjust the brightness with the encoder
 	if (adjustBrightnessNow) {
@@ -141,13 +152,13 @@ void setup() {
 	}
 
 	// Load the high score data and perform sanity check
-	if (!resetHighScore) {
+	if (!highScoreReset) {
 		bool dataValid = loadHighScoreData();
-		resetHighScore |= !dataValid;
+		highScoreReset |= !dataValid;
 	}
 
-	// Reset the high score if necessary
-	if (resetHighScore) {
+	// Reset the high scores if necessary
+	if (highScoreReset) {
 		resetHighScoreData();
 	}
 }
@@ -548,6 +559,19 @@ void clearBoard() {
 	for (uint8_t y = 0; y < FIELD_HEIGHT; y++) {
 		field[y] = y < BORDER_Y ? 0xffff : BORDER_MASK;
 	}
+}
+
+void factoryReset() {
+	for (uint16_t i = 0; i < EEPROM_HIGH_SCORE; i++) {
+		EEPROM.write(i, 0);
+	}
+	resetHighScoreData();
+
+	// Show reset text and 
+	drawText5High("RST");
+	drawBoard(false);
+	LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+	while (true);
 }
 
 /******************************************************************************
