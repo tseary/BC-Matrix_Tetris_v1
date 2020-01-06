@@ -93,9 +93,11 @@ COMMAND_GAME_OVER = 0x0d;
 // EEPROM addresses
 const uint8_t
 EEPROM_RANDOM_SEED = 0,				// uint32_t
+EEPROM_LEGACY_HIGH_SCORE = 4,		// uint16_t
+EEPROM_LEGACY_HIGH_SCORE_INITIALS = 6,	// 3 chars
 EEPROM_HIGH_SCORE = 100,			// uint16_t * 3
 EEPROM_HIGH_SCORE_INITIALS = 102,	// 3 chars * 3
-EEPROM_LED_CURRENT = 10,				// uint8_t
+EEPROM_LED_CURRENT = 10,			// uint8_t
 EEPROM_PIXEL_BRIGHTNESS = 11;		// uint32_t
 const uint8_t
 HIGH_SCORE_SIZE = 5;	// bytes needed to hold one score and initials
@@ -153,7 +155,20 @@ void setup() {
 
 	// Load the high score data and perform sanity check
 	if (!highScoreReset) {
+		// Load the high scores
 		bool dataValid = loadHighScoreData();
+
+		// If the normal high scores are invalid, attempt to load from the legacy high score EEPROM location
+		if (!dataValid) {
+			dataValid = loadLegacyHighScoreData();
+
+			// Save the legacy high score in the new location if it is valid
+			if (dataValid) {
+				saveHighScoreData();
+			}
+		}
+
+		// If no valid high scores were found in EEPROM, request a high score reset
 		highScoreReset |= !dataValid;
 	}
 
@@ -646,6 +661,31 @@ bool loadHighScoreData() {
 		Serial.print("High score: ");
 		Serial.println(highScores[i]);
 #endif
+	}
+
+	return dataValid;
+}
+
+bool loadLegacyHighScoreData() {
+#ifdef DEBUG_SERIAL
+	Serial.println("Load Legacy High Scores");
+#endif
+
+	bool dataValid = true;
+
+	// Load legacy high score
+	EEPROM.get(EEPROM_HIGH_SCORE, highScores[0]);
+	for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+		highScoreInitials[0][a] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + a);
+		dataValid &= highScoreInitials[0][a] >= 'A' && highScoreInitials[0][a] <= 'Z';
+	}
+
+	// Set other high scores to zero
+	for (uint8_t i = 1; i < HIGH_SCORE_COUNT; i++) {
+		highScores[i] = 0;
+		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
+			highScoreInitials[i][a] = 'A';
+		}
 	}
 
 	return dataValid;
