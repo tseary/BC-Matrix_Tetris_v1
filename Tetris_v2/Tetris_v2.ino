@@ -67,6 +67,7 @@ uint16_t fallPeriod = 1000;
 const uint16_t MINIMUM_FALL_PERIOD = 10;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
+uint8_t pauseCounter = 0;
 
 const uint8_t HIGH_SCORE_COUNT = 3;
 const uint8_t INITIALS_COUNT = 3;
@@ -208,8 +209,12 @@ void newGame() {
 // newly spawned tetramino collides with existing blocks.
 void playGame() {
 	while (true) {
+		// Punish abuse of the pause button
+		// If the user paused 2 or more of the previous pieces, no long pieces will spawn
+		bool punish = pauseCounter >= 2;
+
 		// Spawn a new piece
-		setTetramino(random(TETRAMINO_COUNT));
+		setTetramino(random(TETRAMINO_COUNT - (punish ? 1 : 0)) + (punish ? 1 : 0));
 		lastFallMillis = millis();
 
 		drawBoard();
@@ -221,6 +226,9 @@ void playGame() {
 
 		// Flag to stop dropping when a new piece is added
 		bool canDropPiece = false;
+
+		// Used to detect pause abuse
+		bool pausedThisPiece = false;
 
 		// Fall loop
 		while (true) {
@@ -252,6 +260,8 @@ void playGame() {
 
 					// Unpause music
 					sendMusicCommand(COMMAND_UNPAUSE);
+
+					pausedThisPiece = true;
 				}
 
 				// Move left
@@ -320,6 +330,13 @@ void playGame() {
 
 		// The active piece has landed, so assimilate it onto the board
 		assimilateTetramino();
+
+		// Count pauses
+		if (pausedThisPiece) {
+			pauseCounter++;
+		} else if (pauseCounter > 0) {
+			pauseCounter--;
+		}
 
 		// Count completed rows and drop remaining rows
 		uint8_t lineCount = 0;
