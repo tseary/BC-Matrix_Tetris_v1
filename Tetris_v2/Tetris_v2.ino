@@ -26,6 +26,10 @@ uint8_t tetraminoR;  // Rotation 0-3
 uint8_t tetraminoX;  // x position in the field (zero is rightmost column, x increases to the left)
 uint8_t tetraminoY;  // y position in the field (zero is bottom row of board, y increases upwards)
 
+// The stored tetramino
+uint8_t storedType = TETRAMINO_NONE;
+uint8_t storedR = 0;
+
 // The game field is represented by an array of uint16_t, with one bit
 // representing each block. The game board is the part of the field that
 // fits on the screen. There is a minimum 3-bit-wide border around the
@@ -67,6 +71,7 @@ uint16_t fallPeriod = 1000;
 const uint16_t MINIMUM_FALL_PERIOD = 10;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
+const uint16_t SWAP_BLINK_MILLIS = 50;
 
 const uint8_t HIGH_SCORE_COUNT = 3;
 const uint8_t INITIALS_COUNT = 3;
@@ -209,7 +214,7 @@ void newGame() {
 void playGame() {
 	while (true) {
 		// Spawn a new piece
-		setTetramino(random(TETRAMINO_COUNT));
+		spawnTetramino(random(TETRAMINO_COUNT));
 		lastFallMillis = millis();
 
 		drawBoard();
@@ -252,6 +257,30 @@ void playGame() {
 
 					// Unpause music
 					sendMusicCommand(COMMAND_UNPAUSE);
+				}
+
+				// Store this piece and recall the previously stored piece
+				bool store = isLPress() && isRClick() ||
+					isRPress() && isLClick();
+				if (store) {
+					// Swap the active piece with the stored piece
+					uint8_t swapType = storedType;
+					uint8_t swapR = storedR;
+					storedType = tetraminoType;
+					storedR = tetraminoR;
+					tetraminoType = swapType;
+					tetraminoR = swapR;
+
+					// Blink out to show the pieces swapping
+					drawBoard(false);
+					delay(SWAP_BLINK_MILLIS);
+					draw = true;
+
+					// If the active piece is empty, spawn a new piece
+					if (tetraminoType == TETRAMINO_NONE) {
+						// TODO Go back to top of spawn loop
+						spawnTetramino(random(TETRAMINO_COUNT));
+					}
 				}
 
 				// Move left
@@ -736,7 +765,7 @@ bool tryMoveTetraminoDown() {
  ******************************************************************************/
 
  // Spawns a tetramino at the top of the screen
-void setTetramino(uint8_t type) {
+void spawnTetramino(uint8_t type) {
 #ifndef ALL_THE_SAME_TETRAMINO
 	tetraminoType = type;
 #else

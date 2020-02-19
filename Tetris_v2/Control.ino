@@ -4,7 +4,7 @@
 #include <Encoder.h>
 
 // Debouncing
-const uint16_t DEBOUNCE_MICROS = 100;
+const uint16_t DEBOUNCE_MICROS = 500;
 
 // Buttons
 const uint8_t L_BUTTON_PIN = 8; // brown wire
