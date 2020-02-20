@@ -312,41 +312,27 @@ void playGame() {
 					}
 				}
 
-				// TODO use resolveCollision()
-				uint8_t originalX = tetraminoX;
-
 				// Rotate CCW
 				long rotationChange = getEncoderChange();
 				if (rotationChange != 0) {
-					for (uint8_t i = 0; i < 4; i++) {  // This should work as an infinite loop, but we use a for loop for safety
+					// Save the starting rotation
+					uint8_t originalR = tetraminoR;
 
-						// TODO rotate the piece and let a collsion happen, then use resolveCollision().
-						// if resolveCollision() fails, undo the rotation.
-
-						if (!(rotationChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {
-							// Couldn't rotate, check where the collision is and try to move away from the walls
-							if (isCollisionOnRight()) {
-								if (!tryMoveTetraminoLeft()) {
-									// Couldn't move left, break
-									tetraminoX = originalX;	// Undo move
-									break;
-								}
-							} else if (isCollisionOnLeft()) {
-								if (!tryMoveTetraminoRight()) {
-									// Couldn't move right, break
-									tetraminoX = originalX;	// Undo move
-									break;
-								}
-							} else {
-								// Collision in center
-								tetraminoX = originalX;	// Undo move
-								break;
-							}
-						} else {
-							break;  // Rotation succeeded
-						}
+					// Rotate the piece, ignoring collisions
+					if (rotationChange > 0) {
+						rotateTetraminoCW();
+					} else {
+						rotateTetraminoCCW();
 					}
-					draw = true;	// TODO maybe move to "Rotation succeeded"
+
+					// Push the piece around to resolve collisions
+					if (!resolveCollision()) {
+						// Could not resolve
+						tetraminoR = originalR;
+					} else {
+						// Rotation succeeded
+						draw = true;
+					}
 				}
 
 				if (draw) {
