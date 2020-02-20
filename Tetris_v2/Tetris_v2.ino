@@ -202,14 +202,20 @@ void loop() {
 
  // Starts a new game.
 void newGame() {
+	// Reset game stats
 	score = 0;
 	linesCleared = 0;
 	level = getLevel(linesCleared);
 	fallPeriod = getFallPeriod(level);
 
+	// Clear stored piece
+	storedType = TETRAMINO_NONE;
+
+	// Clear the board
 	clearBoard();
 	drawBoard(false);
 
+	// Start the music
 	sendMusicCommand(COMMAND_LEVEL_ONE);
 }
 
