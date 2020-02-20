@@ -17,8 +17,7 @@ const uint8_t BORDER_Y = 3;  // Padding on the bottom of the board
 const uint8_t FIELD_HEIGHT = BOARD_HEIGHT + BORDER_Y;
 const uint16_t BORDER_MASK = ~(~(0xffff << BOARD_WIDTH) << BORDER_X);
 uint16_t field[FIELD_HEIGHT];
-
-uint16_t collisionLine;
+uint16_t collisionLine;	// Set by isTetraminoCollision()
 
 // The active tetramino
 uint8_t tetraminoType = TETRAMINO_NONE;
@@ -227,6 +226,9 @@ void playGame() {
 		// Flag to stop dropping when a new piece is added
 		bool canDropPiece = false;
 
+		// Flag to store only once per key combo
+		bool canStorePiece = true;
+
 		// Fall loop
 		while (true) {
 
@@ -259,65 +261,80 @@ void playGame() {
 					sendMusicCommand(COMMAND_UNPAUSE);
 				}
 
-				// Store this piece and recall the previously stored piece
-				bool store = isLPress() && isRClick() ||
-					isRPress() && isLClick();
-				if (store) {
-					// Swap the active piece with the stored piece
-					uint8_t swapType = storedType;
-					uint8_t swapR = storedR;
-					storedType = tetraminoType;
-					storedR = tetraminoR;
-					tetraminoType = swapType;
-					tetraminoR = swapR;
+				// Store by pressing any two buttons together
+				uint8_t pressCount = (isLPress() ? 1 : 0) + (isRPress() ? 1 : 0) + (isDPress() ? 1 : 0);
+				canStorePiece |= pressCount == 0;	// Allow storing if all the buttons are released
+				canDropPiece &= pressCount <= 1;	// Forbid dropping while multiple buttons are pressed
 
-					// Blink out to show the pieces swapping
-					drawBoard(false);
-					delay(SWAP_BLINK_MILLIS);
-					draw = true;
+				// Store this piece and recall the previously stored piece
+				bool store = pressCount >= 2 && isAnyClick();
+				if (store && canStorePiece) {
+					// Swap the active piece with the stored piece
+					swapStoredTetramino();
 
 					// If the active piece is empty, spawn a new piece
 					if (tetraminoType == TETRAMINO_NONE) {
 						// TODO Go back to top of spawn loop
 						spawnTetramino(random(TETRAMINO_COUNT));
+					} else {
+						// Do collision check on the piece that was swapped in
+						if (!resolveCollision()) {
+							// Could not resolve collision with the swapped-in piece
+							// We are forced to un-swap
+							swapStoredTetramino();
+						}
+					}
+
+					// Blink out to show the pieces swapping (or not)
+					drawBoard(false);
+					delay(SWAP_BLINK_MILLIS);
+					draw = true;
+
+					canStorePiece = false;
+				} else {
+					// Don't move while swapping
+
+					// Move left
+					if (isLClick()) {
+						tryMoveTetraminoLeft();
+						draw = true;
+					}
+
+					// Move right
+					if (isRClick()) {
+						tryMoveTetraminoRight();
+						draw = true;
 					}
 				}
 
-				// Move left
-				if (isLClick()) {
-					tryMoveTetraminoLeft();
-					draw = true;
-				}
-
-				// Move right
-				if (isRClick()) {
-					tryMoveTetraminoRight();
-					draw = true;
-				}
-
-				uint8_t debugOrigX = tetraminoX;
+				// TODO use resolveCollision()
+				uint8_t originalX = tetraminoX;
 
 				// Rotate CCW
-				long positionChange = getEncoderChange();
-				if (positionChange != 0) {
+				long rotationChange = getEncoderChange();
+				if (rotationChange != 0) {
 					for (uint8_t i = 0; i < 4; i++) {  // This should work as an infinite loop, but we use a for loop for safety
-						if (!(positionChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {
+
+						// TODO rotate the piece and let a collsion happen, then use resolveCollision().
+						// if resolveCollision() fails, undo the rotation.
+
+						if (!(rotationChange > 0 ? tryRotateTetraminoCW() : tryRotateTetraminoCCW())) {
 							// Couldn't rotate, check where the collision is and try to move away from the walls
-							if (collisionLine & ~(0xffff << BORDER_X)) {  // Collision on right
+							if (isCollisionOnRight()) {
 								if (!tryMoveTetraminoLeft()) {
 									// Couldn't move left, break
-									tetraminoX = debugOrigX;	// Undo move
+									tetraminoX = originalX;	// Undo move
 									break;
 								}
-							} else if (collisionLine & (0xffff << (BOARD_WIDTH + BORDER_X))) {  // Collision on left
+							} else if (isCollisionOnLeft()) {
 								if (!tryMoveTetraminoRight()) {
 									// Couldn't move right, break
-									tetraminoX = debugOrigX;	// Undo move
+									tetraminoX = originalX;	// Undo move
 									break;
 								}
 							} else {
 								// Collision in center
-								tetraminoX = debugOrigX;	// Undo move
+								tetraminoX = originalX;	// Undo move
 								break;
 							}
 						} else {
@@ -701,48 +718,52 @@ void saveHighScoreData() {
 }
 
 /******************************************************************************
- * Teramino Movement
+ * Tetramino Movement
  ******************************************************************************/
 
  // TODO Combine tryRotateTetraminoCW() with tryRotateTetraminoCCW().
  // Rotates the active tetramino clockwise by 90 degrees if possible.
  // Returns true if the tetramino was rotated successfully.
 bool tryRotateTetraminoCW() {
-	bool canRotateCW = canTetraminoRotateCW();
-	if (canRotateCW) {
-		tetraminoR = (tetraminoR + 3) % 4;
-	}
-	return canRotateCW;
+	if (!canTetraminoRotateCW()) return false;
+	rotateTetraminoCW();
+	return true;
+}
+
+// Rotates the active tetramino clockwise by 90 degrees.
+// Does not check for collisions.
+void rotateTetraminoCW() {
+	tetraminoR = (tetraminoR + 3) % 4;
 }
 
 // Rotates the active tetramino counterclockwise by 90 degrees if possible.
 // Returns true if the tetramino was rotated successfully.
 bool tryRotateTetraminoCCW() {
-	bool canRotateCCW = canTetraminoRotateCCW();
-	if (canRotateCCW) {
-		tetraminoR = (tetraminoR + 1) % 4;
-	}
-	return canRotateCCW;
+	if (!canTetraminoRotateCCW())return false;
+	rotateTetraminoCCW();
+	return true;
+}
+
+// Rotates the active tetramino counterclockwise by 90 degrees.
+// Does not check for collisions.
+void rotateTetraminoCCW() {
+	tetraminoR = (tetraminoR + 1) % 4;
 }
 
 // Moves the active tetramino one step to the left if possible.
 // Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoLeft() {
-	bool canMoveLeft = canTetraminoMoveLeft();
-	if (canMoveLeft) {
-		tetraminoX++;
-	}
-	return canMoveLeft;
+	if (!canTetraminoMoveLeft())return false;
+	tetraminoX++;
+	return true;
 }
 
 // Moves the active tetramino one step to the right if possible.
 // Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoRight() {
-	bool canMoveRight = canTetraminoMoveRight();
-	if (canMoveRight) {
-		tetraminoX--;
-	}
-	return canMoveRight;
+	if (!canTetraminoMoveRight()) return false;
+	tetraminoX--;
+	return true;
 }
 
 // Drops the active tetramino instantaneously.
@@ -753,15 +774,13 @@ void dropTetramino() {
 // Moves the active tetramino one step down if possible.
 // Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoDown() {
-	bool canMoveDown = canTetraminoMoveDown();
-	if (canMoveDown) {
-		tetraminoY--;
-	}
-	return canMoveDown;
+	if (!canTetraminoMoveDown()) return false;
+	tetraminoY--;
+	return true;
 }
 
 /******************************************************************************
- * Active Teramino
+ * Active Tetramino
  ******************************************************************************/
 
  // Spawns a tetramino at the top of the screen
@@ -776,6 +795,65 @@ void spawnTetramino(uint8_t type) {
 	tetraminoY = BOARD_HEIGHT - TETRAMINO_SIZE + BORDER_Y;
 }
 
+// Swaps the stored tetramino with the active one.
+// Type and rotation are swapped, x and y are unchanged.
+void swapStoredTetramino() {
+	uint8_t temp = storedType;
+	storedType = tetraminoType;
+	tetraminoType = temp;
+
+	temp = storedR;
+	storedR = tetraminoR;
+	tetraminoR = temp;
+}
+
+// Attempts to resolve a collision with the walls or other pieces by moving the
+// active tetramino left or right any number of spaces, or down by at most one space.
+// If the tetramino is overlapping one wall, it will be pushed toward the center
+// of the board. Any attempted moves are undone if the collision cannot be resolved.
+// Returns true if successful.
+bool resolveCollision() {
+	uint8_t originalX = tetraminoX;
+	while (isTetraminoCollision()) {
+		if (isCollisionOnRight()) {
+			if (!tryMoveTetraminoLeft()) {
+				// Couldn't move left, break
+				tetraminoX = originalX;	// Undo move
+				return false;
+			}
+		} else if (isCollisionOnLeft()) {
+			if (!tryMoveTetraminoRight()) {
+				// Couldn't move right, break
+				tetraminoX = originalX;	// Undo move
+				return false;
+			}
+		} else {
+			// Collision in center
+			uint8_t originalY = tetraminoY;
+			if (!tryMoveTetraminoDown()) {
+				// Couldn't move down, break
+				tetraminoX = originalX;	// Undo move
+				// tetraminoY has not been changed if we come here, so no need to undo
+				return false;
+			}
+
+			// Moving down succeeded
+			// We don't attempt multiple moves down, so if there is still a collision, fail
+			if (isTetraminoCollision()) {
+				tetraminoX = originalX;	// Undo move
+				tetraminoY = originalY;	// Undo move
+				return false;
+			} else {
+				// Success
+				return true;
+			}
+		}
+	}
+
+	// Success
+	return true;
+}
+
 bool canTetraminoRotateCCW() {
 	return !isTetraminoCollision(tetraminoType, (tetraminoR + 1) % 4, tetraminoX, tetraminoY);
 }
@@ -784,10 +862,12 @@ bool canTetraminoRotateCW() {
 	return !isTetraminoCollision(tetraminoType, (tetraminoR + 3) % 4, tetraminoX, tetraminoY);
 }
 
+// TODO This should allow collisions with the right wall, in case a tetramino overlaps the right wall by >1
 bool canTetraminoMoveLeft() {
 	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX + 1, tetraminoY);
 }
 
+// TODO This should allow collisions with the left wall, in case a tetramino overlaps the left wall by >1
 bool canTetraminoMoveRight() {
 	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX - 1, tetraminoY);
 }
@@ -797,7 +877,6 @@ bool canTetraminoMoveDown() {
 }
 
 // Returns true if any of the tetramino's bits overlap those already on the board
-// TODO Redo logic (see diagram above)
 bool isTetraminoCollision() {
 	return isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX, tetraminoY);
 }
@@ -805,7 +884,7 @@ bool isTetraminoCollision() {
 bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
 	const uint16_t tetraminoShape = TETRAMINO_SHAPES[type][r];
 	for (uint8_t i = 0; i < TETRAMINO_SIZE; i++) {
-		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i))& TETRAMINO_MASK) << x;
+		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i)) & TETRAMINO_MASK) << x;
 		uint16_t fieldLine = field[y + i];
 		collisionLine = tetraminoLine & fieldLine;
 
@@ -815,6 +894,18 @@ bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
 	}
 
 	return false;
+}
+
+// After calling isTetraminoCollision(), returns true if the active tetramino is
+// intersecting the right wall.
+bool isCollisionOnRight() {
+	return collisionLine & ~(0xffff << BORDER_X);
+}
+
+// After calling isTetraminoCOllision(), returns true if the active tetramino is
+// intersecting the left wall.
+bool isCollisionOnLeft() {
+	return collisionLine & (0xffff << (BOARD_WIDTH + BORDER_X));
 }
 
 // Adds the active tetramino to the field.
