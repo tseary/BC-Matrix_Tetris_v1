@@ -6,7 +6,7 @@
 
 // Uncomment these to enable debug behaviour
 //#define DEBUG_SERIAL
-//#define ALL_THE_SAME_TETRAMINO TETRAMINO_I
+//#define ALL_THE_SAME_TETRAMINO TETRAMINO_Z
 
 // Game board
 const uint8_t BOARD_WIDTH = 5;   // The width of the play area
