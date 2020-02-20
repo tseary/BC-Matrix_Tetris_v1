@@ -15,9 +15,14 @@ const uint8_t BORDER_X = 3;  // Padding on the right side of the board
 const uint8_t BORDER_Y = 3;  // Padding on the bottom of the board
 //const uint8_t FIELD_WIDTH = 16;
 const uint8_t FIELD_HEIGHT = BOARD_HEIGHT + BORDER_Y;
-const uint16_t BORDER_MASK = ~(~(0xffff << BOARD_WIDTH) << BORDER_X);
 uint16_t field[FIELD_HEIGHT];
 uint16_t collisionLine;	// Set by isTetraminoCollision()
+
+// Masks
+const uint16_t FIELD_MASK_RIGHT = ~(0xffff << BORDER_X);
+const uint16_t FIELD_MASK_LEFT = 0xffff << (BORDER_X + BOARD_WIDTH);
+const uint16_t FIELD_MASK_BORDER = FIELD_MASK_LEFT | FIELD_MASK_RIGHT;
+const uint16_t FIELD_MASK_CENTER = ~FIELD_MASK_BORDER;
 
 // The active tetramino
 uint8_t tetraminoType = TETRAMINO_NONE;
@@ -371,14 +376,14 @@ void playGame() {
 		uint8_t lineCount = 0;
 		for (uint8_t y = BORDER_Y; y < FIELD_HEIGHT; y++) {
 			// Check whether this row is full
-			if ((field[y] | BORDER_MASK) == 0xffff) {
+			if ((field[y] | FIELD_MASK_BORDER) == 0xffff) {
 				// Row is full
 				lineCount++;
 			} else {
 				// Row is not full
 				if (lineCount != 0) {
 					field[y - lineCount] = field[y];
-					field[y] = BORDER_MASK;
+					field[y] = FIELD_MASK_BORDER;
 				}
 			}
 		}
@@ -603,7 +608,7 @@ bool breakableDelay(uint32_t milliseconds) {
 // Clear the board (also fills the border).
 void clearBoard() {
 	for (uint8_t y = 0; y < FIELD_HEIGHT; y++) {
-		field[y] = y < BORDER_Y ? 0xffff : BORDER_MASK;
+		field[y] = y < BORDER_Y ? 0xffff : FIELD_MASK_BORDER;
 	}
 }
 
@@ -739,7 +744,7 @@ void rotateTetraminoCW() {
 // Rotates the active tetramino counterclockwise by 90 degrees if possible.
 // Returns true if the tetramino was rotated successfully.
 bool tryRotateTetraminoCCW() {
-	if (!canTetraminoRotateCCW())return false;
+	if (!canTetraminoRotateCCW()) return false;
 	rotateTetraminoCCW();
 	return true;
 }
@@ -753,7 +758,7 @@ void rotateTetraminoCCW() {
 // Moves the active tetramino one step to the left if possible.
 // Returns true if the tetramino was moved successfully.
 bool tryMoveTetraminoLeft() {
-	if (!canTetraminoMoveLeft())return false;
+	if (!canTetraminoMoveLeft()) return false;
 	tetraminoX++;
 	return true;
 }
@@ -862,14 +867,16 @@ bool canTetraminoRotateCW() {
 	return !isTetraminoCollision(tetraminoType, (tetraminoR + 3) % 4, tetraminoX, tetraminoY);
 }
 
-// TODO This should allow collisions with the right wall, in case a tetramino overlaps the right wall by >1
+// This allows collisions with the right wall, in case a tetramino overlaps the wall by >1
 bool canTetraminoMoveLeft() {
-	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX + 1, tetraminoY);
+	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX + 1, tetraminoY,
+		FIELD_MASK_LEFT | FIELD_MASK_CENTER);
 }
 
-// TODO This should allow collisions with the left wall, in case a tetramino overlaps the left wall by >1
+// This allows collisions with the left wall, in case a tetramino overlaps the wall by >1
 bool canTetraminoMoveRight() {
-	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX - 1, tetraminoY);
+	return !isTetraminoCollision(tetraminoType, tetraminoR, tetraminoX - 1, tetraminoY,
+		FIELD_MASK_RIGHT | FIELD_MASK_CENTER);
 }
 
 bool canTetraminoMoveDown() {
@@ -882,11 +889,15 @@ bool isTetraminoCollision() {
 }
 
 bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
+	return isTetraminoCollision(type, r, x, y, 0xffff);
+}
+
+bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y, uint16_t mask) {
 	const uint16_t tetraminoShape = TETRAMINO_SHAPES[type][r];
 	for (uint8_t i = 0; i < TETRAMINO_SIZE; i++) {
 		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i)) & TETRAMINO_MASK) << x;
 		uint16_t fieldLine = field[y + i];
-		collisionLine = tetraminoLine & fieldLine;
+		collisionLine = tetraminoLine & fieldLine & mask;
 
 		if (collisionLine != 0) {
 			return true;
@@ -899,13 +910,13 @@ bool isTetraminoCollision(uint8_t type, uint8_t r, uint8_t x, uint8_t y) {
 // After calling isTetraminoCollision(), returns true if the active tetramino is
 // intersecting the right wall.
 bool isCollisionOnRight() {
-	return collisionLine & ~(0xffff << BORDER_X);
+	return collisionLine & FIELD_MASK_RIGHT;
 }
 
 // After calling isTetraminoCOllision(), returns true if the active tetramino is
 // intersecting the left wall.
 bool isCollisionOnLeft() {
-	return collisionLine & (0xffff << (BOARD_WIDTH + BORDER_X));
+	return collisionLine & FIELD_MASK_LEFT;
 }
 
 // Adds the active tetramino to the field.
@@ -955,7 +966,7 @@ void setDisplayText(String str) {
 		} else {
 			// TODO Implement letters
 			for (uint8_t r = 0; r < 5; r++) {
-				field[stringY + r] = BORDER_MASK | (0x01 << r) << BORDER_X;
+				field[stringY + r] = FIELD_MASK_BORDER | (0x01 << r) << BORDER_X;
 			}
 		}
 	}

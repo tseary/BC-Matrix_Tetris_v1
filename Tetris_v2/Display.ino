@@ -110,7 +110,7 @@ void drawBoard(bool drawTetramino, int curtain) {
 		}
 
 		// Draw row
-		for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1), x = 0; (rowMask & ~BORDER_MASK) != 0; rowMask >>= 1, x++) {
+		for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1), x = 0; (rowMask & ~FIELD_MASK_BORDER) != 0; rowMask >>= 1, x++) {
 			boardPicture.setPixel(BOARD_HEIGHT - 1 - boardY, BOARD_WIDTH - 1 - x, row & rowMask);
 		}
 	}
@@ -232,7 +232,7 @@ void printBoard() {
 				TETRAMINO_MASK) << tetraminoX;
 		}
 
-		for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1); (rowMask & ~BORDER_MASK) != 0; rowMask >>= 1) {
+		for (uint16_t rowMask = 1 << (BOARD_WIDTH + BORDER_X - 1); (rowMask & ~FIELD_MASK_BORDER) != 0; rowMask >>= 1) {
 			Serial.print(row & rowMask ? "[]" : "'.");
 		}
 		Serial.print(' ');
