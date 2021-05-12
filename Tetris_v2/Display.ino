@@ -93,7 +93,7 @@ void drawBoard(bool drawTetramino, int curtain) {
 		// Draw board or curtain
 		if (boardY < curtain || boardY >= (BOARD_HEIGHT + curtain)) {
 			// Draw curtain
-			row = 0xffff;
+			row = 0x4924 << (boardY % 3);	// 1/3 density to reduce power
 		} else {
 			// Get a row from the field
 			row = field[boardY + BORDER_Y];
