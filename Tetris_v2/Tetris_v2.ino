@@ -86,6 +86,7 @@ char highScoreInitials[HIGH_SCORE_COUNT][INITIALS_COUNT + 1] = {
 	{'A', 'A', 'A', '\0'}};  // Three letters and NULL (NULL is used for printing as string)
 
 const uint16_t DISPLAY_MILLIS = 3000; // The amount of time to show scores, names, etc.
+const uint16_t HIGHSCORE_DELAY = 1666; // The amount of time to show high scores / initials
 
 // Music commands - top four bits = counter, bottom four bits = opcode
 const uint8_t
@@ -565,7 +566,7 @@ void gameOver() {
 		clearBoard();
 		drawText5High(highScoreInitials[i]);
 		drawBoard(false);
-		if (breakableDelay(1000)) {
+		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
 
@@ -573,7 +574,7 @@ void gameOver() {
 		clearBoard();
 		drawUInt16(highScores[i]);
 		drawBoard(false);
-		if (breakableDelay(1000)) {
+		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
 	}
