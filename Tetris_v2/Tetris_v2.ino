@@ -78,7 +78,8 @@ uint32_t lastFallMillis = 0;
 const uint16_t SWAP_BLINK_MILLIS = 50;
 
 const uint8_t HIGH_SCORE_COUNT = 3;
-const uint8_t INITIALS_COUNT = 3;
+const uint8_t HIGH_SCORE_GROUP_COUNT = 2;	// group 0 for non-swapping, group 1 for swapping
+const uint8_t INITIALS_COUNT = 3;	
 uint16_t highScores[] = {0, 0, 0};	// The 1st place high score is always stored at index 0.
 char highScoreInitials[HIGH_SCORE_COUNT][INITIALS_COUNT + 1] = {
 	{'A', 'A', 'A', '\0'},
@@ -103,12 +104,12 @@ COMMAND_GAME_OVER = 0x0d;
 // EEPROM addresses
 const uint8_t
 EEPROM_RANDOM_SEED = 0,				// uint32_t
-EEPROM_HIGH_SCORE = 100,			// uint16_t * 3
-EEPROM_HIGH_SCORE_INITIALS = 102,	// 3 chars * 3
-EEPROM_LED_CURRENT = 10,				// uint8_t
-EEPROM_PIXEL_BRIGHTNESS = 11;		// uint32_t
+EEPROM_LED_CURRENT = 10,			// uint8_t
+EEPROM_PIXEL_BRIGHTNESS = 11,		// uint32_t
+EEPROM_HIGH_SCORES = 100;			// (uint16_t, char * 3) * 3 * 2 = 30 bytes
 const uint8_t
-HIGH_SCORE_SIZE = 5;	// bytes needed to hold one score and initials
+HIGH_SCORE_SIZE = 5,	// bytes needed to hold one score and initials
+HIGH_SCORE_GROUP_SIZE = 15;	// bytes needed to hold one group of high scores
 
 void setup() {
 #ifdef DEBUG_SERIAL
@@ -162,9 +163,12 @@ void setup() {
 	}
 
 	// Load the high score data and perform sanity check
+	// on every group
 	if (!highScoreReset) {
-		bool dataValid = loadHighScoreData();
-		highScoreReset |= !dataValid;
+		for (uint8_t g = 0; g < HIGH_SCORE_GROUP_COUNT; g++) {
+			bool dataValid = loadHighScoreData(g);
+			highScoreReset |= !dataValid;
+		}
 	}
 
 	// Reset the high scores if necessary
@@ -422,6 +426,9 @@ void gameOver() {
 		delay(CURTAIN_MILLIS);
 	}
 
+	// Load the high scores for the player's group
+	loadHighScoreData(currentHighScoreGroup());
+
 	// Compare the score to the high scores
 	uint8_t newHighScoreIndex = 255;
 	bool newHighScore = false;
@@ -547,7 +554,7 @@ void gameOver() {
 		} while (letterIndex < INITIALS_COUNT);
 
 		// Save the high score data immediately
-		saveHighScoreData();
+		saveHighScoreData(currentHighScoreGroup());
 
 		// Show completed initials
 		delay(1000);
@@ -606,7 +613,8 @@ void clearBoard() {
 }
 
 void factoryReset() {
-	for (uint16_t i = 0; i < EEPROM_HIGH_SCORE; i++) {
+	// Clear the EEPROM up to the high score table
+	for (uint16_t i = 0; i < EEPROM_HIGH_SCORES; i++) {
 		EEPROM.write(i, 0);
 	}
 	resetHighScoreData();
@@ -654,33 +662,49 @@ void shiftHighScores(uint8_t startIndex) {
 	}
 }
 
+// Gets the group associated with the current play style
+// Group 0 is for players that do not use swap piece.
+// Group 1 is for players that use swap piece.
+uint8_t currentHighScoreGroup() {
+	return storedType != TETRAMINO_NONE;
+}
+
 // Clears the high score and initials from EEPROM
 void resetHighScoreData() {
 #ifdef DEBUG_SERIAL
 	Serial.println("Reset High Scores");
 #endif
 
+	// Clear the high scores in RAM
 	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
 		highScores[i] = 0;
 		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
 			highScoreInitials[i][a] = 'A';
 		}
 	}
-	saveHighScoreData();
+
+	// Save over all high scores in EEPROM
+	for (uint8_t g = 0; g < HIGH_SCORE_GROUP_COUNT; g++) {
+		saveHighScoreData(g);
+	}
 }
 
 // Returns true if the loaded data passes sanity check
-bool loadHighScoreData() {
+bool loadHighScoreData(uint8_t group) {
+	if (group >= HIGH_SCORE_GROUP_COUNT) return;
+
 #ifdef DEBUG_SERIAL
 	Serial.println("Load High Scores");
+	Serial.print("High score group: ");
+	Serial.println(group);
 #endif
 
 	bool dataValid = true;
 
 	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
-		EEPROM.get(EEPROM_HIGH_SCORE + i * HIGH_SCORE_SIZE, highScores[i]);
+		EEPROM.get(highscoreEEPROMaddr(group, i), highScores[i]);
 		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
-			highScoreInitials[i][a] = (char)EEPROM.read(EEPROM_HIGH_SCORE_INITIALS + i * HIGH_SCORE_SIZE + a);
+			highScoreInitials[i][a] = (char)EEPROM.read(highscoreEEPROMaddr(group, i) +2+ a);
 			dataValid &= highScoreInitials[i][a] >= 'A' && highScoreInitials[i][a] <= 'Z';
 		}
 
@@ -695,15 +719,18 @@ bool loadHighScoreData() {
 	return dataValid;
 }
 
-void saveHighScoreData() {
+// Write the highscores from RAM to EEPROM for the given group
+void saveHighScoreData(uint8_t group) {
+	if (group >= HIGH_SCORE_GROUP_COUNT) return;
+
 #ifdef DEBUG_SERIAL
 	Serial.println("Save High Scores");
 #endif
 
 	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
-		EEPROM.put(EEPROM_HIGH_SCORE + i * HIGH_SCORE_SIZE, highScores[i]);
+		EEPROM.put(highscoreEEPROMaddr(group, i), highScores[i]);
 		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
-			EEPROM.write(EEPROM_HIGH_SCORE_INITIALS + i * HIGH_SCORE_SIZE + a, highScoreInitials[i][a]);
+			EEPROM.write(highscoreEEPROMaddr(group, i) +2 + a, highScoreInitials[i][a]);
 		}
 
 #ifdef DEBUG_SERIAL
@@ -713,6 +740,11 @@ void saveHighScoreData() {
 		Serial.println(highScores[i]);
 #endif
 	}
+}
+
+// EEPROM address Helper
+int highscoreEEPROMaddr(uint8_t group, uint8_t place) {
+	return EEPROM_HIGH_SCORES + group * HIGH_SCORE_GROUP_SIZE + place * HIGH_SCORE_SIZE;
 }
 
 /******************************************************************************
