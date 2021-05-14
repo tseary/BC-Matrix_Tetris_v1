@@ -160,7 +160,7 @@ void setup() {
 	}
 
 	// Enable/disable the sound
-	bool soundOn = musicSetting & SOUND_ON_MASK;
+	bool soundOn = !(musicSetting & SOUND_ON_MASK);
 	delay(75);  // Short delay before sending first music command
 	sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
 
