@@ -11,15 +11,19 @@ const uint16_t OPCODE_PROCESSING_MICROS = 300;
 void initializeMusic() {
 	// Reset the music controller
 	pinMode(MUSIC_RESET_PIN, OUTPUT);
-	digitalWrite(MUSIC_RESET_PIN, LOW);
-	delayMicroseconds(5);	// Minimum reset pulse width is 2.5 us
-	digitalWrite(MUSIC_RESET_PIN, HIGH);
+	resetMusicController();
 
 	pinMode(OPCODE_LSB_PIN, OUTPUT);
 	pinMode(OPCODE_MSB_PIN, OUTPUT);
 
 	pinMode(SCK_PIN, OUTPUT);
 	digitalWrite(SCK_PIN, LOW);
+}
+
+void resetMusicController() {
+	digitalWrite(MUSIC_RESET_PIN, LOW);
+	delayMicroseconds(5);	// Minimum reset pulse width is 2.5 us
+	digitalWrite(MUSIC_RESET_PIN, HIGH);
 }
 
 // A command may be comprised of one or more opcodes

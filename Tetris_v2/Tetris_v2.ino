@@ -314,7 +314,7 @@ void playGame() {
 						}
 					}
 
-					// Blink out to show the pieces swapping (or not)
+					// Blink out to show the pieces swapping (or not swapping)
 					drawBoard(false);
 					delay(SWAP_BLINK_MILLIS);
 					draw = true;
@@ -350,12 +350,12 @@ void playGame() {
 					}
 
 					// Push the piece around to resolve collisions
-					if (!resolveCollision()) {
-						// Could not resolve
-						tetraminoR = originalR;
-					} else {
+					if (resolveCollision()) {
 						// Rotation succeeded
 						draw = true;
+					} else {
+						// Could not resolve
+						tetraminoR = originalR;
 					}
 				}
 
@@ -428,7 +428,7 @@ void playGame() {
 	}
 }
 
-// Draws the game over animation, displays the player's score, etc.
+// Draws the game-over animation, displays the player's score, etc.
 void gameOver() {
 	sendMusicCommand(COMMAND_GAME_OVER);
 
