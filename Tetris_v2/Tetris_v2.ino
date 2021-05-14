@@ -101,11 +101,15 @@ COMMAND_SOUND_ON = 0x0b,
 COMMAND_SOUND_OFF = 0x0c,
 COMMAND_GAME_OVER = 0x0d;
 
+const uint8_t SOUND_ON_MASK = 0x01;
+
 // EEPROM addresses
+// The default for all EEPROM up to 100 is 0.
 const uint8_t
 EEPROM_RANDOM_SEED = 0,				// uint32_t
 EEPROM_LED_CURRENT = 10,			// uint8_t
 EEPROM_PIXEL_BRIGHTNESS = 11,		// uint32_t
+EEPROM_MUSIC_SETTING = 31,			// uint8_t
 EEPROM_HIGH_SCORES = 100;			// (uint16_t, char * 3) * 3 * 2 = 30 bytes
 const uint8_t
 HIGH_SCORE_SIZE = 5,	// bytes needed to hold one score and initials
@@ -131,7 +135,7 @@ void setup() {
 
 	// Power-on settings
 	updateControl();
-	bool soundOn = !isDPress();
+	bool soundToggle = isDPress();
 	bool adjustBrightnessNow = isRPress();
 	bool seriousBusiness = isLPress() && isDPress();
 	if (seriousBusiness) {
@@ -147,7 +151,16 @@ void setup() {
 	bool highScoreReset = seriousBusiness && !isRPress();
 	bool doFactoryReset = seriousBusiness && isRPress();
 
+	// Load the sound settings from EEPROM
+	uint8_t musicSetting;
+	EEPROM.get(EEPROM_MUSIC_SETTING, musicSetting);
+	if (soundToggle) {
+		musicSetting ^= SOUND_ON_MASK;
+		EEPROM.put(EEPROM_MUSIC_SETTING, musicSetting);
+	}
+
 	// Enable/disable the sound
+	bool soundOn = musicSetting & SOUND_ON_MASK;
 	delay(75);  // Short delay before sending first music command
 	sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
 
