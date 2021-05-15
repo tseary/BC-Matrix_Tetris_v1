@@ -6,7 +6,7 @@
 
 // Uncomment these to enable debug behaviour
 //#define DEBUG_SERIAL
-//#define ALL_THE_SAME_TETRAMINO TETRAMINO_Z
+//#define ALL_THE_SAME_TETRAMINO TETRAMINO_I
 
 // Game board
 const uint8_t BOARD_WIDTH = 5;   // The width of the play area
@@ -76,6 +76,7 @@ const uint16_t MINIMUM_FALL_PERIOD = 10;
 //uint32_t nextFallMillis = 0;
 uint32_t lastFallMillis = 0;
 const uint16_t SWAP_BLINK_MILLIS = 50;
+const uint16_t CLEAR_BLINK_MILLIS = 75;
 
 const uint8_t HIGH_SCORE_COUNT = 3;
 const uint8_t HIGH_SCORE_GROUP_COUNT = 2;	// group 0 for non-swapping, group 1 for swapping
@@ -257,7 +258,7 @@ void playGame() {
 		// While D is pressed to drop the current piece, dropCounter is set to DEBOUNCE_MAX.
 		// Then dropCounter is decremented once per input cycle.
 		// The canDropPiece flag is reset when dropCounter reaches zero.
-		const uint8_t DEBOUNCE_MAX = 4;
+		const uint8_t DEBOUNCE_MAX = 5;
 		uint8_t dropCounter = 0;
 
 		// Flag to store only once per key combo
@@ -395,6 +396,24 @@ void playGame() {
 		// The active piece has landed, so assimilate it onto the board
 		assimilateTetramino();
 
+		// Check if this piece will result in a clear board
+		bool boardCleared = true;
+		for (uint8_t y = BORDER_Y; y < FIELD_HEIGHT && boardCleared; y++) {
+			bool fullRow = (field[y] | FIELD_MASK_BORDER) == 0xffff;
+			bool emptyRow = (field[y] & ~FIELD_MASK_BORDER) == 0x0000;
+			boardCleared &= fullRow || emptyRow;
+		}
+
+		// Flash the board to show that something special has happened
+		if (boardCleared) {
+			for (uint8_t i = 0; i < 3; i++) {
+				drawBlank();
+				delay(CLEAR_BLINK_MILLIS);
+				drawBoard(false);
+				delay(CLEAR_BLINK_MILLIS);
+			}
+		}
+
 		// Count completed rows and drop remaining rows
 		uint8_t lineCount = 0;
 		for (uint8_t y = BORDER_Y; y < FIELD_HEIGHT; y++) {
@@ -420,10 +439,11 @@ void playGame() {
 #endif
 
 			// Calculate score
-			score += getLineScore(lineCount);
+			score += (boardCleared ? 2 : 1) * getLineScore(lineCount);
 #ifdef DEBUG_SERIAL
 			Serial.print("Score: ");
 			Serial.println(score);
+			if (boardCleared) Serial.println("Board cleared.");
 #endif
 
 			// Level up
@@ -436,10 +456,10 @@ void playGame() {
 				Serial.print("Level: ");
 				Serial.println(level);
 #endif
-	}
-}
 			}
 		}
+	}
+}
 
 // Draws the game-over animation, displays the player's score, etc.
 void gameOver() {
@@ -610,12 +630,12 @@ void gameOver() {
 		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
-		}
+	}
 
 #ifdef DEBUG_SERIAL
 	Serial.println("Game Over!");
 #endif
-	}
+}
 
 // Helper
 // Returns true if the user clicked a button to break the delay
@@ -740,10 +760,10 @@ bool loadHighScoreData(uint8_t group) {
 		Serial.print("High score: ");
 		Serial.println(highScores[i]);
 #endif
-		}
+	}
 
 	return dataValid;
-	}
+}
 
 // Write the highscores from RAM to EEPROM for the given group
 void saveHighScoreData(uint8_t group) {
