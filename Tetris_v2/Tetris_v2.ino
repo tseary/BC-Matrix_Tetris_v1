@@ -79,7 +79,7 @@ const uint16_t SWAP_BLINK_MILLIS = 50;
 
 const uint8_t HIGH_SCORE_COUNT = 3;
 const uint8_t HIGH_SCORE_GROUP_COUNT = 2;	// group 0 for non-swapping, group 1 for swapping
-const uint8_t INITIALS_COUNT = 3;	
+const uint8_t INITIALS_COUNT = 3;
 uint16_t highScores[] = {0, 0, 0};	// The 1st place high score is always stored at index 0.
 char highScoreInitials[HIGH_SCORE_COUNT][INITIALS_COUNT + 1] = {
 	{'A', 'A', 'A', '\0'},
@@ -254,6 +254,11 @@ void playGame() {
 
 		// Flag to stop dropping when a new piece is added
 		bool canDropPiece = false;
+		// While D is pressed to drop the current piece, dropCounter is set to DEBOUNCE_MAX.
+		// Then dropCounter is decremented once per input cycle.
+		// The canDropPiece flag is reset when dropCounter reaches zero.
+		const uint8_t DEBOUNCE_MAX = 4;
+		uint8_t dropCounter = 0;
 
 		// Flag to store only once per key combo
 		bool canStorePiece = true;
@@ -364,7 +369,15 @@ void playGame() {
 				}
 
 				// Allow dropping if D is released
-				canDropPiece |= !isDPress();
+				if (isDPress()) {
+					// Fill the counter
+					dropCounter = DEBOUNCE_MAX;
+				} else {
+					// Decrement the counter
+					if (dropCounter) dropCounter--;
+				}
+				canDropPiece |= dropCounter == 0;
+
 			} while (millis() < lastFallMillis +
 				(canDropPiece && isDPress() ? MINIMUM_FALL_PERIOD : fallPeriod));
 
@@ -423,10 +436,10 @@ void playGame() {
 				Serial.print("Level: ");
 				Serial.println(level);
 #endif
-			}
-		}
 	}
 }
+			}
+		}
 
 // Draws the game-over animation, displays the player's score, etc.
 void gameOver() {
@@ -597,12 +610,12 @@ void gameOver() {
 		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
-	}
+		}
 
 #ifdef DEBUG_SERIAL
 	Serial.println("Game Over!");
 #endif
-}
+	}
 
 // Helper
 // Returns true if the user clicked a button to break the delay
@@ -717,7 +730,7 @@ bool loadHighScoreData(uint8_t group) {
 	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
 		EEPROM.get(highscoreEEPROMaddr(group, i), highScores[i]);
 		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
-			highScoreInitials[i][a] = (char)EEPROM.read(highscoreEEPROMaddr(group, i) +2+ a);
+			highScoreInitials[i][a] = (char)EEPROM.read(highscoreEEPROMaddr(group, i) + 2 + a);
 			dataValid &= highScoreInitials[i][a] >= 'A' && highScoreInitials[i][a] <= 'Z';
 		}
 
@@ -727,10 +740,10 @@ bool loadHighScoreData(uint8_t group) {
 		Serial.print("High score: ");
 		Serial.println(highScores[i]);
 #endif
-	}
+		}
 
 	return dataValid;
-}
+	}
 
 // Write the highscores from RAM to EEPROM for the given group
 void saveHighScoreData(uint8_t group) {
@@ -743,7 +756,7 @@ void saveHighScoreData(uint8_t group) {
 	for (uint8_t i = 0; i < HIGH_SCORE_COUNT; i++) {
 		EEPROM.put(highscoreEEPROMaddr(group, i), highScores[i]);
 		for (uint8_t a = 0; a < INITIALS_COUNT; a++) {
-			EEPROM.write(highscoreEEPROMaddr(group, i) +2 + a, highScoreInitials[i][a]);
+			EEPROM.write(highscoreEEPROMaddr(group, i) + 2 + a, highScoreInitials[i][a]);
 		}
 
 #ifdef DEBUG_SERIAL
@@ -961,7 +974,7 @@ bool isCollisionOnLeft() {
 void assimilateTetramino() {
 	const uint16_t tetraminoShape = TETRAMINO_SHAPES[tetraminoType][tetraminoR];
 	for (uint8_t i = 0; i < TETRAMINO_SIZE; i++) {
-		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i))& TETRAMINO_MASK) << tetraminoX;
+		uint16_t tetraminoLine = ((tetraminoShape >> (TETRAMINO_SIZE * i)) & TETRAMINO_MASK) << tetraminoX;
 		field[tetraminoY + i] |= tetraminoLine;
 	}
 }
