@@ -105,16 +105,30 @@ COMMAND_GAME_OVER = 0x0d;
 const uint8_t SOUND_ON_MASK = 0x01;
 
 // EEPROM addresses
-// The default for all EEPROM up to 100 is 0.
+// The factory default for all EEPROM up to 100 is 0.
 const uint8_t
 EEPROM_RANDOM_SEED = 0,				// uint32_t
 EEPROM_LED_CURRENT = 10,			// uint8_t
 EEPROM_PIXEL_BRIGHTNESS = 11,		// uint32_t
 EEPROM_MUSIC_SETTING = 31,			// uint8_t
+EEPROM_USAGE_L_COUNT = 40,			// uint32_t
+EEPROM_USAGE_R_COUNT = 44,			// uint32_t
+EEPROM_USAGE_D_COUNT = 48,			// uint32_t
+EEPROM_USAGE_E_COUNT = 52,			// uint32_t
+EEPROM_USAGE_ENC_POS_COUNT = 56,	// uint32_t
+EEPROM_USAGE_ENC_NEG_COUNT = 60,	// uint32_t
 EEPROM_HIGH_SCORES = 100;			// (uint16_t, char * 3) * 3 * 2 = 30 bytes
 const uint8_t
 HIGH_SCORE_SIZE = 5,	// bytes needed to hold one score and initials
 HIGH_SCORE_GROUP_SIZE = 15;	// bytes needed to hold one group of high scores
+
+// Usage Metrics
+uint32_t usageLCounter,
+	usageRCounter,
+	usageDCounter,
+	usageECounter;
+uint32_t usageEncPosCounter,
+	usageEncNegCounter;
 
 void setup() {
 #ifdef DEBUG_SERIAL
@@ -138,6 +152,18 @@ void setup() {
 	updateControl();
 	bool soundToggle = isDPress();
 	bool adjustBrightnessNow = isRPress();
+	/*bool startSerial = isEPress();*/
+
+	// Open the serial port
+	/*if (startSerial) {
+		Serial.begin(115200);
+		drawText5High("COM");
+		drawBoard(false);
+		delay(1000);
+		Serial.println(F("Tetris v2"));
+		Serial.println(F("Compiled: " __DATE__ " " __TIME__));
+	}*/
+
 	bool seriousBusiness = isLPress() && isDPress();
 	if (seriousBusiness) {
 		delay(1000);
@@ -152,6 +178,29 @@ void setup() {
 	bool highScoreReset = seriousBusiness && !isRPress();
 	bool doFactoryReset = seriousBusiness && isRPress();
 
+	// Factory reset if necessary
+	if (doFactoryReset) {
+		factoryReset();
+		// factoryReset() never returns
+	}
+	
+	// Load the high score data and perform sanity check
+	// on every group
+	if (!highScoreReset) {
+		for (uint8_t g = 0; g < HIGH_SCORE_GROUP_COUNT; g++) {
+			bool dataValid = loadHighScoreData(g);
+			highScoreReset |= !dataValid;
+		}
+	}
+
+	// Reset the high scores if necessary
+	if (highScoreReset) {
+		resetHighScoreData();
+	}
+
+	// Load the usage metrics from EEPROM
+	loadUsageMetrics();
+
 	// Load the sound settings from EEPROM
 	uint8_t musicSetting;
 	EEPROM.get(EEPROM_MUSIC_SETTING, musicSetting);
@@ -165,29 +214,9 @@ void setup() {
 	delay(75);  // Short delay before sending first music command
 	sendMusicCommand(soundOn ? COMMAND_SOUND_ON : COMMAND_SOUND_OFF);
 
-	// Factory reset if necessary
-	if (doFactoryReset) {
-		factoryReset();
-		return;
-	}
-
 	// Adjust the brightness with the encoder
 	if (adjustBrightnessNow) {
 		adjustBrightness();
-	}
-
-	// Load the high score data and perform sanity check
-	// on every group
-	if (!highScoreReset) {
-		for (uint8_t g = 0; g < HIGH_SCORE_GROUP_COUNT; g++) {
-			bool dataValid = loadHighScoreData(g);
-			highScoreReset |= !dataValid;
-		}
-	}
-
-	// Reset the high scores if necessary
-	if (highScoreReset) {
-		resetHighScoreData();
 	}
 }
 
@@ -226,6 +255,11 @@ void newGame() {
 	linesCleared = 0;
 	level = getLevel(linesCleared);
 	fallPeriod = getFallPeriod(level);
+
+	// TODO
+	/*if (serialEnabled) {
+		printUsageMetrics();
+	}*/
 
 	// Clear stored piece
 	storedType = TETRAMINO_NONE;
@@ -271,6 +305,7 @@ void playGame() {
 			do {
 				// Read buttons
 				updateControl();
+				updateUsageMetrics();
 				bool draw = false;  // Only draw if something changed
 
 				// Do pause
@@ -281,6 +316,10 @@ void playGame() {
 					// Dim display by reducing current
 					uint8_t originalCurrent = getLEDCurrent();
 					setLEDCurrent(originalCurrent / 3, false);
+
+					// TODO draw the text "PAUSE"
+					//drawTextPause();
+					//drawBoard(false);
 
 					// Wait for any input
 					do {
@@ -464,6 +503,9 @@ void playGame() {
 // Draws the game-over animation, displays the player's score, etc.
 void gameOver() {
 	sendMusicCommand(COMMAND_GAME_OVER);
+
+	// Save usage metrics (before the user has a chance to turn off the game)
+	saveUsageMetrics();
 
 	// Fill animation
 	const uint16_t CURTAIN_MILLIS = 1000 / BOARD_HEIGHT;
@@ -1056,3 +1098,58 @@ void setDisplayDigit5Wide(uint8_t digit, uint8_t x, uint8_t y) {
 	}
 }
 
+/******************************************************************************
+* Usage Metrics
+******************************************************************************/
+
+void loadUsageMetrics() {
+	EEPROM.get(EEPROM_USAGE_L_COUNT, usageLCounter);
+	EEPROM.get(EEPROM_USAGE_R_COUNT, usageRCounter);
+	EEPROM.get(EEPROM_USAGE_D_COUNT, usageDCounter);
+	EEPROM.get(EEPROM_USAGE_E_COUNT, usageECounter);
+	EEPROM.get(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
+	EEPROM.get(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+}
+
+void saveUsageMetrics() {
+	EEPROM.put(EEPROM_USAGE_L_COUNT, usageLCounter);
+	EEPROM.put(EEPROM_USAGE_R_COUNT, usageRCounter);
+	EEPROM.put(EEPROM_USAGE_D_COUNT, usageDCounter);
+	EEPROM.put(EEPROM_USAGE_E_COUNT, usageECounter);
+	EEPROM.put(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
+	EEPROM.put(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+}
+
+// Call after updateControl() to increment appropriate counters
+void updateUsageMetrics() {
+	// Count number of button clicks
+	if (isLClick()) usageLCounter++;
+	if (isRClick()) usageRCounter++;
+	if (isDClick()) usageDCounter++;
+	if (isEClick()) usageECounter++;
+
+	// Count raw encoder pulses
+	long encChange = getEncoderChange();
+	if (encChange > 0) {
+		usageEncPosCounter += encChange;
+	} else {
+		usageEncNegCounter -= encChange;
+	}
+}
+
+// Prints all metrics over serial
+void printUsageMetrics() {
+	Serial.println(F("Usage Metrics:"));
+	Serial.print(F("L button:\t"));
+	Serial.println(usageLCounter);
+	Serial.print(F("R button:\t"));
+	Serial.println(usageRCounter);
+	Serial.print(F("D button:\t"));
+	Serial.println(usageDCounter);
+	Serial.print(F("E button:\t"));
+	Serial.println(usageECounter);
+	Serial.print(F("Encoder CW pulses:\t"));
+	Serial.println(usageEncPosCounter);
+	Serial.print(F("Encoder CCW pulses:\t"));
+	Serial.println(usageEncNegCounter);
+}
