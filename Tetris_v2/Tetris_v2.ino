@@ -122,6 +122,9 @@ const uint8_t
 HIGH_SCORE_SIZE = 5,	// bytes needed to hold one score and initials
 HIGH_SCORE_GROUP_SIZE = 15;	// bytes needed to hold one group of high scores
 
+// Serial Interface
+bool serialEnabled = false;
+
 // Usage Metrics
 uint32_t usageLCounter,
 	usageRCounter,
@@ -131,11 +134,6 @@ uint32_t usageEncPosCounter,
 	usageEncNegCounter;
 
 void setup() {
-#ifdef DEBUG_SERIAL
-	Serial.begin(115200);
-	Serial.println(F("Compiled: " __DATE__ " " __TIME__));
-#endif
-
 	// Initialize the RNG, and change the seed value for next time
 	uint32_t eepromRandomSeed;
 	EEPROM.get(EEPROM_RANDOM_SEED, eepromRandomSeed);
@@ -152,17 +150,21 @@ void setup() {
 	updateControl();
 	bool soundToggle = isDPress();
 	bool adjustBrightnessNow = isRPress();
-	/*bool startSerial = isEPress();*/
+	serialEnabled = isEPress();
 
 	// Open the serial port
-	/*if (startSerial) {
+#ifndef DEBUG_SERIAL
+	if (serialEnabled) {
+#endif
 		Serial.begin(115200);
 		drawText5High("COM");
 		drawBoard(false);
 		delay(1000);
 		Serial.println(F("Tetris v2"));
 		Serial.println(F("Compiled: " __DATE__ " " __TIME__));
-	}*/
+#ifndef DEBUG_SERIAL
+	}
+#endif
 
 	bool seriousBusiness = isLPress() && isDPress();
 	if (seriousBusiness) {
@@ -230,7 +232,7 @@ void adjustBrightness() {
 
 	// Change the current with the encoder
 	do {
-		updateControl();
+		updateControlAndUsage();
 		currentInput += 0x10 * getEncoderChange();
 		currentInput = constrain(currentInput, 0x0f, 0xff);
 		setLEDCurrent((uint8_t)currentInput, true);
@@ -239,6 +241,11 @@ void adjustBrightness() {
 }
 
 void loop() {
+	// Send serial update before each game
+	if (serialEnabled) {
+		printUsageMetrics();
+	}
+
 	newGame();
 	playGame();
 	gameOver();
@@ -255,11 +262,6 @@ void newGame() {
 	linesCleared = 0;
 	level = getLevel(linesCleared);
 	fallPeriod = getFallPeriod(level);
-
-	// TODO
-	/*if (serialEnabled) {
-		printUsageMetrics();
-	}*/
 
 	// Clear stored piece
 	storedType = TETRAMINO_NONE;
@@ -304,8 +306,7 @@ void playGame() {
 			// User input loop
 			do {
 				// Read buttons
-				updateControl();
-				updateUsageMetrics();
+				updateControlAndUsage();
 				bool draw = false;  // Only draw if something changed
 
 				// Do pause
@@ -317,9 +318,8 @@ void playGame() {
 					uint8_t originalCurrent = getLEDCurrent();
 					setLEDCurrent(originalCurrent / 3, false);
 
-					// TODO draw the text "PAUSE"
-					//drawTextPause();
-					//drawBoard(false);
+					// TODO draw the curtain
+					//drawBoard(false, N);
 
 					// Wait for any input
 					do {
@@ -532,11 +532,9 @@ void gameOver() {
 		}
 	}
 
-	// TODO Forbid skipping score display if true
-
 	// Display score (behind curtain)
 	clearBoard();
-	drawUInt16(score);
+	drawNumber(score);
 
 	// Raise curtain animation
 	for (uint8_t y = 1; y <= BOARD_HEIGHT; y++) {
@@ -583,7 +581,7 @@ void gameOver() {
 		bool redraw;  // The display is only updated if this is true
 		updateControl();  // One extra call to clear the last encoder rotation
 		do {
-			updateControl();
+			updateControlAndUsage();
 			redraw = false;
 
 			// Change letter
@@ -667,7 +665,7 @@ void gameOver() {
 
 		// Show high score
 		clearBoard();
-		drawUInt16(highScores[i]);
+		drawNumber(highScores[i]);
 		drawBoard(false);
 		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
@@ -1102,22 +1100,9 @@ void setDisplayDigit5Wide(uint8_t digit, uint8_t x, uint8_t y) {
 * Usage Metrics
 ******************************************************************************/
 
-void loadUsageMetrics() {
-	EEPROM.get(EEPROM_USAGE_L_COUNT, usageLCounter);
-	EEPROM.get(EEPROM_USAGE_R_COUNT, usageRCounter);
-	EEPROM.get(EEPROM_USAGE_D_COUNT, usageDCounter);
-	EEPROM.get(EEPROM_USAGE_E_COUNT, usageECounter);
-	EEPROM.get(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
-	EEPROM.get(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
-}
-
-void saveUsageMetrics() {
-	EEPROM.put(EEPROM_USAGE_L_COUNT, usageLCounter);
-	EEPROM.put(EEPROM_USAGE_R_COUNT, usageRCounter);
-	EEPROM.put(EEPROM_USAGE_D_COUNT, usageDCounter);
-	EEPROM.put(EEPROM_USAGE_E_COUNT, usageECounter);
-	EEPROM.put(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
-	EEPROM.put(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+inline void updateControlAndUsage() {
+	updateControl();
+	updateUsageMetrics();
 }
 
 // Call after updateControl() to increment appropriate counters
@@ -1135,6 +1120,24 @@ void updateUsageMetrics() {
 	} else {
 		usageEncNegCounter -= encChange;
 	}
+}
+
+void loadUsageMetrics() {
+	EEPROM.get(EEPROM_USAGE_L_COUNT, usageLCounter);
+	EEPROM.get(EEPROM_USAGE_R_COUNT, usageRCounter);
+	EEPROM.get(EEPROM_USAGE_D_COUNT, usageDCounter);
+	EEPROM.get(EEPROM_USAGE_E_COUNT, usageECounter);
+	EEPROM.get(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
+	EEPROM.get(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+}
+
+void saveUsageMetrics() {
+	EEPROM.put(EEPROM_USAGE_L_COUNT, usageLCounter);
+	EEPROM.put(EEPROM_USAGE_R_COUNT, usageRCounter);
+	EEPROM.put(EEPROM_USAGE_D_COUNT, usageDCounter);
+	EEPROM.put(EEPROM_USAGE_E_COUNT, usageECounter);
+	EEPROM.put(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
+	EEPROM.put(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
 }
 
 // Prints all metrics over serial

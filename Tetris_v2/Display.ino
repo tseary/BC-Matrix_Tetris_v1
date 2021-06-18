@@ -120,7 +120,7 @@ void drawBoard(bool drawTetramino, int curtain) {
   //  printBoard();
 }
 
-void drawUInt16(uint16_t score) {
+void drawNumber(uint16_t score) {
 	for (uint8_t i = 0; i == 0 || (i < 4 && score != 0); i++) {
 		setDisplayDigit5Wide(score % 10, 0, BORDER_Y + 1 + 6 * i);
 		score /= 10;
