@@ -126,12 +126,12 @@ HIGH_SCORE_GROUP_SIZE = 15;	// bytes needed to hold one group of high scores
 bool serialEnabled = false;
 
 // Usage Metrics
-uint32_t usageLCounter,
-	usageRCounter,
-	usageDCounter,
-	usageECounter;
-uint32_t usageEncPosCounter,
-	usageEncNegCounter;
+uint32_t usageLCounter = 0,
+	usageRCounter = 0,
+	usageDCounter = 0,
+	usageECounter = 0;
+uint32_t usageEncPosCounter = 0,
+	usageEncNegCounter = 0;
 
 void setup() {
 	// Initialize the RNG, and change the seed value for next time
@@ -166,6 +166,12 @@ void setup() {
 	}
 #endif
 
+	/*
+	* Press and hold these buttons at power-on to reset the EEPROM:
+	* L + D     ... Reset high scores
+	* L + D + E ... Reset usage metrics
+	* L + D + R ... Factory reset (deletes all data)
+	*/
 	bool seriousBusiness = isLPress() && isDPress();
 	if (seriousBusiness) {
 		delay(1000);
@@ -177,7 +183,8 @@ void setup() {
 		updateControl();
 		seriousBusiness &= isLPress() && isDPress();
 	}
-	bool highScoreReset = seriousBusiness && !isRPress();
+	bool highScoreReset = seriousBusiness && !isRPress() && !isEPress();
+	bool usageMetricsReset = seriousBusiness && isEPress();
 	bool doFactoryReset = seriousBusiness && isRPress();
 
 	// Factory reset if necessary
@@ -200,8 +207,12 @@ void setup() {
 		resetHighScoreData();
 	}
 
-	// Load the usage metrics from EEPROM
-	loadUsageMetrics();
+	// Load or reset the usage metrics from EEPROM
+	if (usageMetricsReset) {
+		saveUsageMetrics();
+	} else {
+		loadUsageMetrics();
+	}
 
 	// Load the sound settings from EEPROM
 	uint8_t musicSetting;
