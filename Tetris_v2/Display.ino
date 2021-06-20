@@ -249,6 +249,7 @@ void drawText5High(const char* text) {
 			field[y + r] = letters5High[c - 'A'][r] << BORDER_X;
 		}
 	}
+	drawBoard(false);
 }
 
 /******************************************************************************

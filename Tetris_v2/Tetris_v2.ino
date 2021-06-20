@@ -117,6 +117,8 @@ EEPROM_USAGE_D_COUNT = 48,			// uint32_t
 EEPROM_USAGE_E_COUNT = 52,			// uint32_t
 EEPROM_USAGE_ENC_POS_COUNT = 56,	// uint32_t
 EEPROM_USAGE_ENC_NEG_COUNT = 60,	// uint32_t
+EEPROM_USAGE_GAMES_PLAYED = 64,		// uint32_t
+EEPROM_USAGE_FOUR_LINERS = 68,		// uint32_t
 EEPROM_HIGH_SCORES = 100;			// (uint16_t, char * 3) * 3 * 2 = 30 bytes
 const uint8_t
 HIGH_SCORE_SIZE = 5,	// bytes needed to hold one score and initials
@@ -132,6 +134,8 @@ uint32_t usageLCounter = 0,
 	usageECounter = 0;
 uint32_t usageEncPosCounter = 0,
 	usageEncNegCounter = 0;
+uint32_t usageGamesPlayed = 0;
+uint32_t usageFourLiners = 0;
 
 void setup() {
 	// Initialize the RNG, and change the seed value for next time
@@ -158,7 +162,6 @@ void setup() {
 #endif
 		Serial.begin(115200);
 		drawText5High("COM");
-		drawBoard(false);
 		delay(1000);
 		Serial.println(F("Tetris v2"));
 		Serial.println(F("Compiled: " __DATE__ " " __TIME__));
@@ -239,7 +242,6 @@ void adjustBrightness() {
 
 	// Draw something to show the brightness
 	drawText5High("XXXX");
-	drawBoard();
 
 	// Change the current with the encoder
 	do {
@@ -507,6 +509,11 @@ void playGame() {
 				Serial.println(level);
 #endif
 			}
+
+			// Count Tetris's
+			if (lineCount == 4) {
+				usageFourLiners++;
+			}
 		}
 	}
 }
@@ -516,6 +523,7 @@ void gameOver() {
 	sendMusicCommand(COMMAND_GAME_OVER);
 
 	// Save usage metrics (before the user has a chance to turn off the game)
+	usageGamesPlayed++;
 	saveUsageMetrics();
 
 	// Fill animation
@@ -573,7 +581,6 @@ void gameOver() {
 		// Display "HIGH"
 		clearBoard();
 		drawText5High("HIGH");
-		drawBoard(false);
 		delay(1000);
 
 		// Display "SCORE"
@@ -640,7 +647,6 @@ void gameOver() {
 				// Draw initials
 				clearBoard();
 				drawText5High(highScoreInitials[newHighScoreIndex]);
-				drawBoard(false);
 
 				// Unhide the selected letter
 				if (!flashOn && letterIndex < INITIALS_COUNT) {
@@ -668,7 +674,6 @@ void gameOver() {
 		// Show high score initials
 		clearBoard();
 		drawText5High(highScoreInitials[i]);
-		drawBoard(false);
 		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
@@ -676,7 +681,6 @@ void gameOver() {
 		// Show high score
 		clearBoard();
 		drawNumber(highScores[i]);
-		drawBoard(false);
 		if (breakableDelay(HIGHSCORE_DELAY)) {
 			return;
 		}
@@ -717,7 +721,6 @@ void factoryReset() {
 
 	// Show reset text and 
 	drawText5High("RST");
-	drawBoard(false);
 	LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
 	while (true);
 }
@@ -1139,6 +1142,8 @@ void loadUsageMetrics() {
 	EEPROM.get(EEPROM_USAGE_E_COUNT, usageECounter);
 	EEPROM.get(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
 	EEPROM.get(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+	EEPROM.get(EEPROM_USAGE_GAMES_PLAYED, usageGamesPlayed);
+	EEPROM.get(EEPROM_USAGE_FOUR_LINERS, usageFourLiners);
 }
 
 void saveUsageMetrics() {
@@ -1148,11 +1153,17 @@ void saveUsageMetrics() {
 	EEPROM.put(EEPROM_USAGE_E_COUNT, usageECounter);
 	EEPROM.put(EEPROM_USAGE_ENC_POS_COUNT, usageEncPosCounter);
 	EEPROM.put(EEPROM_USAGE_ENC_NEG_COUNT, usageEncNegCounter);
+	EEPROM.put(EEPROM_USAGE_GAMES_PLAYED, usageGamesPlayed);
+	EEPROM.put(EEPROM_USAGE_FOUR_LINERS, usageFourLiners);
 }
 
 // Prints all metrics over serial
 void printUsageMetrics() {
 	Serial.println(F("Usage Metrics:"));
+	Serial.print(F("Games played:\t"));
+	Serial.println(usageGamesPlayed);
+	Serial.print(F("Total Tetris's:\t"));
+	Serial.println(usageFourLiners);
 	Serial.print(F("L button:\t"));
 	Serial.println(usageLCounter);
 	Serial.print(F("R button:\t"));
