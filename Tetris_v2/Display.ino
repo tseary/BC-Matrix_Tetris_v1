@@ -6,8 +6,8 @@ AS1130 ledDriver;
 AS1130::Current ledCurrent;
 
 typedef AS1130Picture24x5 Picture;
-Picture boardPicture; // The picture of the board, score, etc.
-Picture blankPicture; // A picture with nothing drawn on it
+Picture boardPicture; // The picture of the board or general text
+Picture textPicture;  // A picture for special text
 
 void initializeDisplay() {
 	// Start I2C
@@ -115,9 +115,6 @@ void drawBoard(bool drawTetramino, int curtain) {
 		}
 	}
 	ledDriver.setOnOffFrame(0, boardPicture);
-
-	// DEBUG
-  //  printBoard();
 }
 
 void drawNumber(uint16_t score) {
@@ -128,7 +125,79 @@ void drawNumber(uint16_t score) {
 }
 
 void drawBlank() {
-	ledDriver.setOnOffFrame(0, blankPicture);
+	ledDriver.setOnOffFrameAllOff(0);
+}
+
+/******************************************************************************
+* Special Text
+******************************************************************************/
+
+const uint8_t scoreText[24] = {
+  0b01111,
+  0b11000,
+  0b00111,
+  0b11110,
+  0b00000,
+  0b01111,
+  0b10000,
+  0b10000,
+  0b01111,
+  0b00000,
+  0b01110,
+  0b10001,
+  0b10001,
+  0b01110,
+  0b00000,
+  0b11110,
+  0b10001,
+  0b11110,
+  0b10001,
+  0b00000,
+  0b11111,
+  0b11100,
+  0b10000,
+  0b11111};
+
+const uint8_t pauseText[24] = {
+  0b11110,
+  0b10001,
+  0b11110,
+  0b10000,
+  0b00000,
+  0b01110,
+  0b10001,
+  0b11111,
+  0b10001,
+  0b00000,
+  0b10001,
+  0b10001,
+  0b10001,
+  0b01110,
+  0b00000,
+  0b01111,
+  0b11000,
+  0b00111,
+  0b11110,
+  0b00000,
+  0b11111,
+  0b11100,
+  0b10000,
+  0b11111};
+
+inline void drawTextScore() {
+	drawSpecialText(scoreText);
+}
+inline void drawTextPause() {
+	drawSpecialText(pauseText);
+}
+void drawSpecialText(const uint8_t* textArray) {
+	// Render and output the text array
+	for (uint8_t y = 0; y < BOARD_HEIGHT; y++) {
+		for (uint8_t x = 0; x < BOARD_WIDTH; x++) {
+			textPicture.setPixel(y, x, textArray[y] & (1 << x));
+		}
+	}
+	ledDriver.setOnOffFrame(0, textPicture);
 }
 
 /******************************************************************************
@@ -179,39 +248,6 @@ void drawText5High(const char* text) {
 		for (uint8_t r = 0; r < 5; r++) {
 			field[y + r] = letters5High[c - 'A'][r] << BORDER_X;
 		}
-	}
-}
-
-// TODO Make a separate picture for this
-const uint8_t scoreText[24] = {
-  0b01111,
-  0b11000,
-  0b00111,
-  0b11110,
-  0b00000,
-  0b01111,
-  0b10000,
-  0b10000,
-  0b01111,
-  0b00000,
-  0b01110,
-  0b10001,
-  0b10001,
-  0b01110,
-  0b00000,
-  0b11110,
-  0b10001,
-  0b11110,
-  0b10001,
-  0b00000,
-  0b11111,
-  0b11100,
-  0b10000,
-  0b11111};
-
-void drawTextScore() {
-	for (uint8_t r = 0; r < 24; r++) {
-		field[FIELD_HEIGHT - 1 - r] = scoreText[r] << BORDER_X;
 	}
 }
 

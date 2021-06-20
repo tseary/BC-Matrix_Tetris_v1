@@ -329,8 +329,8 @@ void playGame() {
 					uint8_t originalCurrent = getLEDCurrent();
 					setLEDCurrent(originalCurrent / 3, false);
 
-					// TODO draw the curtain
-					//drawBoard(false, N);
+					// Draw the text "PAUSE"
+					drawTextPause();
 
 					// Wait for any input
 					do {
@@ -578,7 +578,6 @@ void gameOver() {
 
 		// Display "SCORE"
 		drawTextScore();
-		drawBoard(false);
 		delay(1000);
 
 		// Enter initials
