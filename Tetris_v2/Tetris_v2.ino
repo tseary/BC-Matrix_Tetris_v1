@@ -1053,63 +1053,6 @@ void assimilateTetramino() {
 }
 
 /******************************************************************************
- * Text
- ******************************************************************************/
-
- // 3-wide digits 0 to 9
-const uint32_t BOARD_DIGITS[5] = {
-	0b00110010100010110001110111111010,
-	0b00001101100101001001001100010101,
-	0b00011010010110110111110010010101,
-	0b00101101001100100101001001110101,
-	0b00010010111011111101110110010010};
-
-// 5-wide digits 0 to 5
-const uint32_t BOARD_DIGITS_05[5] = {
-	0b00111100000111110111111111101110,
-	0b00000010000100001100000010010001,
-	0b00111101111100110011100010010001,
-	0b00100001000100001000011110010001,
-	0b00111111000111111111100010001110};
-
-// 5-wide digits 6 to 9
-const uint32_t BOARD_DIGITS_69[5] = {
-	0b00000000000011110011100010001110,
-	0b00000000000000001100010010010001,
-	0b00000000000001111011100001011110,
-	0b00000000000010001100010000110000,
-	0b00000000000001110011101111101111};
-
-void setDisplayText(String str) {
-	for (uint8_t i = 0; i < str.length(); i++) {
-		uint8_t stringY = BOARD_HEIGHT - 6 * (i + 1) + BORDER_Y;
-		char stringChar = str[i];
-
-		if (isDigit(stringChar)) {
-			setDisplayDigit3Wide(stringChar - '0', 1, stringY);
-		} else {
-			// TODO Implement letters
-			for (uint8_t r = 0; r < 5; r++) {
-				field[stringY + r] = FIELD_MASK_BORDER | (0x01 << r) << BORDER_X;
-			}
-		}
-	}
-	drawBoard();
-}
-
-void setDisplayDigit3Wide(uint8_t digit, uint8_t x, uint8_t y) {
-	for (uint8_t r = 0; r < 5; r++) {
-		field[y + r] = ((BOARD_DIGITS[r] >> (3 * digit)) & 0b111) << (BORDER_X + x);
-	}
-}
-
-void setDisplayDigit5Wide(uint8_t digit, uint8_t x, uint8_t y) {
-	for (uint8_t r = 0; r < 5; r++) {
-		field[y + r] = (((digit <= 5 ? BOARD_DIGITS_05[r] : BOARD_DIGITS_69[r]) >> (5 * (digit % 6))) & 0b11111) << (BORDER_X + x);
-	}
-}
-
-/******************************************************************************
 * Usage Metrics
 ******************************************************************************/
 

@@ -117,13 +117,6 @@ void drawBoard(bool drawTetramino, int curtain) {
 	ledDriver.setOnOffFrame(0, boardPicture);
 }
 
-void drawNumber(uint16_t score) {
-	for (uint8_t i = 0; i == 0 || (i < 4 && score != 0); i++) {
-		setDisplayDigit5Wide(score % 10, 0, BORDER_Y + 1 + 6 * i);
-		score /= 10;
-	}
-}
-
 void drawBlank() {
 	ledDriver.setOnOffFrameAllOff(0);
 }
@@ -248,6 +241,40 @@ void drawText5High(const char* text) {
 		for (uint8_t r = 0; r < 5; r++) {
 			field[y + r] = letters5High[c - 'A'][r] << BORDER_X;
 		}
+	}
+	drawBoard(false);
+}
+
+/******************************************************************************
+ * Number Text
+ ******************************************************************************/
+
+ // 5-wide digits 0 to 5
+const uint32_t BOARD_DIGITS_05[5] = {
+	0b00111100000111110111111111101110,
+	0b00000010000100001100000010010001,
+	0b00111101111100110011100010010001,
+	0b00100001000100001000011110010001,
+	0b00111111000111111111100010001110};
+
+// 5-wide digits 6 to 9
+const uint32_t BOARD_DIGITS_69[5] = {
+	0b00000000000011110011100010001110,
+	0b00000000000000001100010010010001,
+	0b00000000000001111011100001011110,
+	0b00000000000010001100010000110000,
+	0b00000000000001110011101111101111};
+
+void setDisplayDigit5Wide(uint8_t digit, uint8_t x, uint8_t y) {
+	for (uint8_t r = 0; r < 5; r++) {
+		field[y + r] = (((digit <= 5 ? BOARD_DIGITS_05[r] : BOARD_DIGITS_69[r]) >> (5 * (digit % 6))) & 0b11111) << (BORDER_X + x);
+	}
+}
+
+void drawNumber(uint16_t score) {
+	for (uint8_t i = 0; i == 0 || (i < 4 && score != 0); i++) {
+		setDisplayDigit5Wide(score % 10, 0, BORDER_Y + 1 + 6 * i);
+		score /= 10;
 	}
 	drawBoard(false);
 }
